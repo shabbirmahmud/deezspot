@@ -26,7 +26,7 @@ setup(
                 "mutagen", "pycryptodome", "requests",
                 "spotipy", "tqdm", "fastapi",
                 "uvicorn[standard]",
-                "git+https://github.com/kokarare1212/librespot-python.git"
+                "librespot"
          ],
 
 	scripts = [
