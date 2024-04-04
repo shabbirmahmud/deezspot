@@ -17,7 +17,7 @@ setup(
 	url = "https://github.com/farihdzkyy/deezloadclone",
 
 	packages = [
-		"deezloadclone",
+		"deezloader",
 		"deezloader/models", "deezloader/spotloader",
 		"deezloader/deezloader", "deezloader/libutils"
 	],
