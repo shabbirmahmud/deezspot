@@ -22,11 +22,12 @@ setup(
 		"deezloader/deezloader", "deezloader/libutils"
 	],
 
-	install_requires = [
-		"mutagen", "pycryptodome", "requests",
-		"spotipy", "tqdm", "fastapi",
-		"uvicorn[standard]", "git+https://github.com/kokarare1212/librespot-python.git"
-	],
+        install_requires = [
+                "mutagen", "pycryptodome", "requests",
+                "spotipy", "tqdm", "fastapi",
+                "uvicorn[standard]",
+                "git+https://github.com/kokarare1212/librespot-python.git"
+         ],
 
 	scripts = [
 		"deezloader/bin/deez-dw.py",
