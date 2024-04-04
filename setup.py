@@ -17,9 +17,9 @@ setup(
 	url = "https://github.com/farihdzkyy/deezloadclone",
 
 	packages = [
-		"deezloader",
-		"deezloader/models", "deezloader/spotloader",
-		"deezloader/deezloader", "deezloader/libutils"
+		"deezloadclone",
+		"deezloadclone/models", "deezloadclone/spotloader",
+		"deezloadclone/deezloader", "deezloadclone/libutils"
 	],
 
         install_requires = [
