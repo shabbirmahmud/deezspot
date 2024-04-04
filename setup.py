@@ -25,7 +25,7 @@ setup(
 	install_requires = [
 		"mutagen", "pycryptodome", "requests",
 		"spotipy", "tqdm", "fastapi",
-		"uvicorn[standard]", "git+https://github.com/kokarare1212/librespot-python"
+		"uvicorn[standard]", "git+https://github.com/kokarare1212/librespot-python.git"
 	],
 
 	scripts = [
