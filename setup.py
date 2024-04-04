@@ -18,8 +18,8 @@ setup(
 
 	packages = [
 		"deezloadclone",
-		"deezloadclone/models", "deezloadclone/spotloader",
-		"deezloadclone/deezloader", "deezloadclone/libutils"
+		"deezloader/models", "deezloader/spotloader",
+		"deezloader/deezloader", "deezloader/libutils"
 	],
 
         install_requires = [
