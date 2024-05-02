@@ -11,7 +11,7 @@ from ..models import (
 )
 
 from .__download__ import (
-	DW_TRACK, DW_ALBUM, DW_PLAYLIST
+	DW_TRACK, DW_ALBUM, DW_PLAYLIST, DW_EPISODE
 )
 
 from ..exceptions import (
@@ -420,15 +420,31 @@ class DeeLogin:
 
 		return track
 
+	def download_episode(self, link_episode, output_dir, quality_download, recursive_quality, recursive_download, not_interface, method_save):
+		link_is_valid(link_episode)
+		ids = get_ids(link_episode)
+		preferences = Preferences()
+		preferences.output_dir = output_dir
+		preferences.quality_download = quality_download
+		preferences.recursive_quality = recursive_quality
+		preferences.recursive_download = recursive_download
+		preferences.not_interface = not_interface
+		preferences.method_save = method_save
+		preferences.ids = ids
+		
+		episode_downloader = DW_EPISODE(preferences)
+		
+		return episode_downloader.dw()
+	
 	def download_smart(
 		self, link,
-		output_dir = stock_output,
-		quality_download = stock_quality,
-		recursive_quality = stock_recursive_quality,
-		recursive_download = stock_recursive_download,
-		not_interface = stock_not_interface,
-		make_zip = stock_zip,
-		method_save = method_save
+		output_dir=stock_output,
+		quality_download=stock_quality,
+		recursive_quality=stock_recursive_quality,
+		recursive_download=stock_recursive_download,
+		not_interface=stock_not_interface,
+		make_zip=stock_zip,
+		method_save=method_save
 	) -> Smart:
 
 		link_is_valid(link)
@@ -455,12 +471,12 @@ class DeeLogin:
 
 			track = func(
 				link,
-				output_dir = output_dir,
-				quality_download = quality_download,
-				recursive_quality = recursive_quality,
-				recursive_download = recursive_download,
-				not_interface = not_interface,
-				method_save = method_save
+				output_dir=output_dir,
+				quality_download=quality_download,
+				recursive_quality=recursive_quality,
+				recursive_download=recursive_download,
+				not_interface=not_interface,
+				method_save=method_save
 			)
 
 			smart.type = "track"
@@ -478,13 +494,13 @@ class DeeLogin:
 
 			album = func(
 				link,
-				output_dir = output_dir,
-				quality_download = quality_download,
-				recursive_quality = recursive_quality,
-				recursive_download = recursive_download,
-				not_interface = not_interface,
-				make_zip = make_zip,
-				method_save = method_save
+				output_dir=output_dir,
+				quality_download=quality_download,
+				recursive_quality=recursive_quality,
+				recursive_download=recursive_download,
+				not_interface=not_interface,
+				make_zip=make_zip,
+				method_save=method_save
 			)
 
 			smart.type = "album"
@@ -502,13 +518,13 @@ class DeeLogin:
 
 			playlist = func(
 				link,
-				output_dir = output_dir,
-				quality_download = quality_download,
-				recursive_quality = recursive_quality,
-				recursive_download = recursive_download,
-				not_interface = not_interface,
-				make_zip = make_zip,
-				method_save = method_save
+				output_dir=output_dir,
+				quality_download=quality_download,
+				recursive_quality=recursive_quality,
+				recursive_download=recursive_download,
+				not_interface=not_interface,
+				make_zip=make_zip,
+				method_save=method_save
 			)
 
 			smart.type = "playlist"
