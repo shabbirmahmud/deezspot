@@ -486,3 +486,35 @@ class DW_PLAYLIST:
 			playlist.zip_path = zip_name
 
 		return playlist
+
+class DW_EPISODE:
+    def __init__(
+        self,
+        preferences: Preferences
+    ) -> None:
+        self.__preferences = preferences
+        self.__ids = self.__preferences.ids
+        self.__output_dir = self.__preferences.output_dir
+        self.__method_save = self.__preferences.method_save
+        self.__song_metadata = self.__preferences.song_metadata
+        self.__not_interface = self.__preferences.not_interface
+        self.__quality_download = self.__preferences.quality_download
+
+    def dw(self) -> Track:
+        infos_dw = API_GW.get_episode_data(self.__ids)
+
+        media = Download_JOB.check_sources(
+            [infos_dw], self.__quality_download
+        )
+
+        infos_dw['media_url'] = media[0]
+
+        episode = EASY_DW(infos_dw, self.__preferences).easy_dw()
+
+        if not episode.success:
+            episode_title = self.__song_metadata['title']
+            error_msg = f"Cannot download episode: {episode_title}"
+
+            raise TrackNotFound(message=error_msg)
+
+        return episode
