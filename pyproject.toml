@@ -13,7 +13,7 @@ authors = [
 ]
 dependencies = [
     "mutagen>=1.45.0",
-    "pycryptodome>=3.10.0",
+    "pycryptodome>=3.10.0", 
     "requests>=2.25.0",
     "spotipy>=2.19.0",
     "tqdm>=4.62.0",
@@ -23,12 +23,9 @@ dependencies = [
 ]
 requires-python = ">=3.10"
 
-[project.urls]
-Homepage = "https://github.com/farihdzkyy/deezloadclone"
-
-[tool.setuptools]
-packages = ["deezloader", "deezloader.models", "deezloader.spotloader", "deezloader.deezloader", "deezloader.libutils"]
-
-[tool.setuptools.scripts]
+[project.scripts]
 deez-dw = "deezloader.bin.deez_dw:main"
 deez-web = "deezloader.bin.deez_web:main"
+
+[project.urls]
+Homepage = "https://github.com/farihdzkyy/deezloadclone"
