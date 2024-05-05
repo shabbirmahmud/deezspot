@@ -1,32 +1,34 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "deezloadclone"
 version = "2024.05.05"
 description = "Downloads songs, albums or playlists from deezer and spotify (cloned from https://github.com/An0nimia/deezloader)"
-license = "GNU Affero General Public License v3"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "farihdzaky", email = "farihdzakyy@gmail.com" }
+]
+dependencies = [
+    "mutagen>=*",
+    "pycryptodome>=*",
+    "requests>=*",
+    "spotipy>=*",
+    "tqdm>=*",
+    "fastapi>=*",
+    "uvicorn[standard]>=*",
+    "librespot>=*"
+]
+requires-python = ">=3.10"
 
 [project.urls]
 Homepage = "https://github.com/farihdzkyy/deezloadclone"
 
-[project.authors]
-farihdzaky = { email = "farihdzakyy@gmail.com" }
+[tool.setuptools]
+packages = ["deezloader", "deezloader.models", "deezloader.spotloader", "deezloader.deezloader", "deezloader.libutils"]
 
-[build-system]
-requires = ["setuptools>=42"]  # Optional dependency for build automation
-backend-requires = ["setuptools>=42"]  # Optional dependency for build automation
-
-[dependencies]
-mutagen = "*"
-pycryptodome = "*"
-requests = "*"
-spotipy = "*"
-tqdm = "*"
-fastapi = "*"
-uvicorn[standard] = "*"
-librespot = "*"
-
-[scripts]
-deez-dw.py = "deezloader.bin.deez_dw:main"
-deez-web.py = "deezloader.bin.deez_web:main"
-
-[libsigil]  # Optional but recommended for type hints
-generates = ["deezloader/__init__.py"]
+[tool.setuptools.scripts]
+deez-dw = "deezloader.bin.deez_dw:main"
+deez-web = "deezloader.bin.deez_web:main"
