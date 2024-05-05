@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from spotipy import Spotify
-from .exceptions import InvalidLink
+from deezloader.exceptions import InvalidLink
 from spotipy.exceptions import SpotifyException
 from spotipy.cache_handler import CacheFileHandler
 from spotipy.oauth2 import SpotifyClientCredentials
