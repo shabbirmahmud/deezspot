@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from .track import Track
+from deezloader.models.track import Track
 
 class Album:
 	def __init__(self, ids: int) -> None:
