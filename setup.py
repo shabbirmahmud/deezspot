@@ -6,7 +6,7 @@ README.close()
 
 setup(
 	name = "deezloadclone",
-	version = "2024.04.04",
+	version = "2024.05.05",
 	description = "Downloads songs, albums or playlists from deezer and spotify (cloned from https://github.com/An0nimia/deezloader)",
 	long_description = readmed,
 	long_description_content_type = "text/markdown",
