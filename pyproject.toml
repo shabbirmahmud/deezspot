@@ -1,0 +1,32 @@
+[project]
+name = "deezloadclone"
+version = "2024.05.05"
+description = "Downloads songs, albums or playlists from deezer and spotify (cloned from https://github.com/An0nimia/deezloader)"
+license = "GNU Affero General Public License v3"
+
+[project.urls]
+Homepage = "https://github.com/farihdzkyy/deezloadclone"
+
+[project.authors]
+farihdzaky = { email = "farihdzakyy@gmail.com" }
+
+[build-system]
+requires = ["setuptools>=42"]  # Optional dependency for build automation
+backend-requires = ["setuptools>=42"]  # Optional dependency for build automation
+
+[dependencies]
+mutagen = "*"
+pycryptodome = "*"
+requests = "*"
+spotipy = "*"
+tqdm = "*"
+fastapi = "*"
+uvicorn[standard] = "*"
+librespot = "*"
+
+[scripts]
+deez-dw.py = "deezloader.bin.deez_dw:main"
+deez-web.py = "deezloader.bin.deez_web:main"
+
+[libsigil]  # Optional but recommended for type hints
+generates = ["deezloader/__init__.py"]
