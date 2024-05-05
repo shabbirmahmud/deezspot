@@ -1,33 +1,38 @@
 #!/usr/bin/python3
-
 import traceback
 from os.path import isfile
-from ..easy_spoty import Spo
+from deezloader.easy_spoty import Spo
 from librespot.core import Session
 from deezloader.exceptions import InvalidLink
-from .__spo_api__ import tracking, tracking_album
-from .spotify_settings import librespot_credentials, stock_quality
-
-from ..libutils.utils import (
-    get_ids, link_is_valid, what_kind
+from deezloader.spotloader.__spo_api__ import tracking, tracking_album
+from deezloader.spotloader.spotify_settings import librespot_credentials, stock_quality
+from deezloader.libutils.utils import (
+    get_ids,
+    link_is_valid,
+    what_kind,
 )
-
-from ..models import (
-    Track, Album,
-    Playlist, Preferences, Smart
+from deezloader.models import (
+    Track,
+    Album,
+    Playlist,
+    Preferences,
+    Smart,
 )
-
-from .__download__ import (
-    DW_TRACK, DW_ALBUM, DW_PLAYLIST,
-    Download_JOB
+from deezloader.spotloader.__download__ import (
+    DW_TRACK,
+    DW_ALBUM,
+    DW_PLAYLIST,
+    Download_JOB,
 )
-
-from ..libutils.others_settings import (
-    stock_output, stock_recursive_quality,
-    stock_recursive_download, stock_not_interface,
-    stock_zip, method_save, is_thread
+from deezloader.libutils.others_settings import (
+    stock_output,
+    stock_recursive_quality,
+    stock_recursive_download,
+    stock_not_interface,
+    stock_zip,
+    method_save,
+    is_thread,
 )
-
 Spo()
 
 class SpoLogin:

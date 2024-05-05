@@ -1,30 +1,30 @@
 import traceback
-
 from tqdm import tqdm
 from copy import deepcopy
 from os.path import isfile
 from librespot.core import Session
-from ..exceptions import TrackNotFound
+from deezloader.exceptions import TrackNotFound
 from librespot.metadata import TrackId
-from .spotify_settings import qualities
-from ..libutils.others_settings import answers
-from ..__taggers__ import write_tags, check_track
+from deezloader.spotloader.spotify_settings import qualities
+from deezloader.libutils.others_settings import answers
+from deezloader.__taggers__ import write_tags, check_track
 from librespot.audio.decoders import VorbisOnlyAudioQuality
-
 from os import (
-	remove, system,
-	replace as os_replace
+    remove,
+    system,
+    replace as os_replace,
 )
-
-from ..models import (
-	Track, Album,
-	Playlist, Preferences,
+from deezloader.models import (
+    Track,
+    Album,
+    Playlist,
+    Preferences,
 )
-
-from ..libutils.utils import (
-	set_path, create_zip, request
+from deezloader.libutils.utils import (
+    set_path,
+    create_zip,
+    request,
 )
-
 class Download_JOB:
 
 	@classmethod

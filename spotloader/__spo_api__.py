@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-from ..easy_spoty import Spo
+from deezloader.easy_spoty import Spo
 from datetime import datetime
-from ..libutils.utils import convert_to_date
+from deezloader.libutils.utils import convert_to_date
 import traceback
 
 def tracking(ids, album=None):
