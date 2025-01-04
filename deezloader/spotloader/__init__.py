@@ -38,8 +38,7 @@ Spo()
 class SpoLogin:
     def __init__(
         self,
-        email: str,
-        pwd: str
+        credentials_path: str,
     ) -> None:
 
         __session = Session.Builder()
@@ -48,7 +47,7 @@ class SpoLogin:
         if isfile(librespot_credentials):
             __session = __session.stored_file().create()
         else:
-            __session = __session.user_pass(email, pwd).create()
+            print("Please place you credentials.json!")
 
         Download_JOB(__session)
 
