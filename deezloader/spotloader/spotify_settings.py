@@ -3,7 +3,7 @@
 from librespot.audio.decoders import AudioQuality
 
 stock_quality = "HIGH"
-librespot_credentials = ".spotloader_credentials.json"
+librespot_credentials = "credentials.json"
 
 qualities = {
 	"HIGH": {
