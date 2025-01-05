@@ -120,3 +120,34 @@ def tracking_album(album_json):
         return None
 
     return song_metadata
+
+def tracking_episode(ids):
+    datas = {}
+    try:
+        json_episode = Spo.get_episode(ids)
+
+        datas['audio_preview_url'] = json_episode.get('audio_preview_url', '')
+        datas['description'] = json_episode.get('description', '')
+        datas['duration'] = json_episode.get('duration_ms', 0) // 1000
+        datas['explicit'] = json_episode.get('explicit', False)
+        datas['external_urls'] = json_episode.get('external_urls', {}).get('spotify', '')
+        datas['href'] = json_episode.get('href', '')
+        datas['html_description'] = json_episode.get('html_description', '')
+        datas['id'] = json_episode.get('id', '')
+        datas['image'] = json_episode['images'][0]['url'] if json_episode.get('images') else ''
+        datas['image2'] = json_episode['images'][1]['url'] if len(json_episode.get('images', [])) > 1 else ''
+        datas['image3'] = json_episode['images'][2]['url'] if len(json_episode.get('images', [])) > 2 else ''
+        datas['is_externally_hosted'] = json_episode.get('is_externally_hosted', False)
+        datas['is_playable'] = json_episode.get('is_playable', False)
+        datas['language'] = json_episode.get('language', '')
+        datas['languages'] = " & ".join(json_episode.get('languages', []))
+        datas['name'] = json_episode.get('name', '')
+        datas['release_date'] = convert_to_date(json_episode.get('release_date', ''))
+        datas['show'] = json_episode.get('show', {}).get('name', '')
+        datas['publisher'] = json_episode.get('show', {}).get('publisher', '')
+        datas['ids'] = ids
+    except Exception as e:
+        traceback.print_exc() 
+        return None
+
+    return datas

@@ -3,7 +3,13 @@
 from base64 import b64encode
 from mutagen.flac import FLAC, Picture
 from mutagen.oggvorbis import OggVorbis
-from deezloader.models.track import Track
+from deezloader.models import Track, Episode
+import requests
+
+def request(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return response
 
 from mutagen.id3 import (
 	ID3NoHeaderError,
@@ -194,70 +200,68 @@ def __write_mp3(song, data):
 
 	audio.save(song, v2_version = 3)
 
-def __write_ogg(song, data):
-	tag = OggVorbis(song)
-	images = Picture()
-	images.type = 3
-	images.data = data['image']
+def __write_ogg(song, song_metadata):
+    audio = OggVorbis(song)
+    audio.delete()
 
-	pic_data = b64encode(
-		images.write()
-	).decode("ascii")
+    if 'music' in song_metadata:
+        audio['title'] = song_metadata['music']
+    if 'artist' in song_metadata:
+        audio['artist'] = song_metadata['artist']
+    if 'album' in song_metadata:
+        audio['album'] = song_metadata['album']
+    if 'tracknum' in song_metadata:
+        audio['tracknumber'] = str(song_metadata['tracknum'])
+    if 'discnum' in song_metadata:
+        audio['discnumber'] = str(song_metadata['discnum'])
+    if 'year' in song_metadata:
+        audio['date'] = str(song_metadata['year'])
+    if 'genre' in song_metadata:
+        audio['genre'] = song_metadata['genre']
+    if 'isrc' in song_metadata:
+        audio['isrc'] = song_metadata['isrc']
+    if 'description' in song_metadata:
+        audio['description'] = song_metadata['description']
 
-	tag['metadata_block_picture'] = pic_data
-	#tag['lyrics'] = data['lyric']
-	tag['artist'] = data['artist']
-	tag['title'] = data['music']
-	tag['year'] = f"{data['year'].year}"
-	tag['date'] = f"{data['year'].year}/{data['year'].month}/{data['year'].day}"
-	tag['album'] = data['album']
-	tag['tracknumber'] = f"{data['tracknum']}"
-	tag['discnumber'] = f"{data['discnum']}"
-	tag['genre'] = data['genre']
-	tag['albumartist'] = data['ar_album']
-	#tag['author'] = data['author']
-	#tag['composer'] = data['composer']
-	#tag['copyright'] = data['copyright']
-	tag['bpm'] = f"{data['bpm']}"
-	tag['length'] = f"{data['duration']}"
-	tag['organization'] = data['label']
-	tag['isrc'] = data['isrc']
-	#tag['lyricist'] = data['lyricist']
-	#tag['version'] = data['version']
-	tag.save()
+    if 'image' in song_metadata:
+        image = Picture()
+        image.type = 3
+        image.desc = 'Cover'
+        image.mime = 'image/jpeg'
+        image.data = request(song_metadata['image']).content
+        audio['metadata_block_picture'] = [image.write()]
 
-def write_tags(track: Track):
-	song = track.song_path
-	song_metadata = track.tags
-	f_format = track.file_format
+    audio.save()
 
-	if f_format == ".flac":
-		__write_flac(song, song_metadata)
-	elif f_format == ".ogg":
-		__write_ogg(song, song_metadata)
-	else:
-		__write_mp3(song, song_metadata)
+def write_tags(media):
+    if isinstance(media, Track):
+        song = media.song_path
+    elif isinstance(media, Episode):
+        song = media.episode_path
+    else:
+        raise ValueError("Unsupported media type")
 
-def check_track(track: Track):
-	song = track.song_path
-	f_format = track.file_format
-	is_ok = False
+    song_metadata = media.tags
+    f_format = media.file_format
 
-	if f_format == ".flac":
-		tags = FLAC(song)
-	elif f_format == ".ogg":
-		tags = OggVorbis(song)
-	else:
-		try:
-			tags = ID3(song)
-		except ID3NoHeaderError:
-			return is_ok
+    if f_format == ".flac":
+        __write_flac(song, song_metadata)
+    elif f_format == ".ogg":
+        __write_ogg(song, song_metadata)
+    else:
+        __write_mp3(song, song_metadata)
 
-	l_tags = len(
-		tags.keys()
-	)
+def check_track(media):
+    if isinstance(media, Track):
+        song = media.song_path
+    elif isinstance(media, Episode):
+        song = media.episode_path
+    else:
+        raise ValueError("Unsupported media type")
 
-	if l_tags >= 14:
-		is_ok = True
+    f_format = media.file_format
+    is_ok = False
 
-	return is_ok
+    # Add your logic to check the track/episode here
+
+    return is_ok

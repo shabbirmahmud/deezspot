@@ -26,6 +26,7 @@ setup(
                 "mutagen", "pycryptodome", "requests",
                 "spotipy", "tqdm", "fastapi",
                 "uvicorn[standard]",
+                "spotipy-anon",
                 "librespot"
          ],
 

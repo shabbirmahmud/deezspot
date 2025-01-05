@@ -4,8 +4,8 @@ from os.path import isfile
 from deezloader.easy_spoty import Spo
 from librespot.core import Session
 from deezloader.exceptions import InvalidLink
-from deezloader.spotloader.__spo_api__ import tracking, tracking_album
-from deezloader.spotloader.spotify_settings import librespot_credentials, stock_quality
+from deezloader.spotloader.__spo_api__ import tracking, tracking_album, tracking_episode
+from deezloader.spotloader.spotify_settings import stock_quality
 from deezloader.libutils.utils import (
     get_ids,
     link_is_valid,
@@ -17,11 +17,13 @@ from deezloader.models import (
     Playlist,
     Preferences,
     Smart,
+    Episode
 )
 from deezloader.spotloader.__download__ import (
     DW_TRACK,
     DW_ALBUM,
     DW_PLAYLIST,
+    DW_EPISODE,
     Download_JOB,
 )
 from deezloader.libutils.others_settings import (
@@ -40,16 +42,19 @@ class SpoLogin:
         self,
         credentials_path: str,
     ) -> None:
+        self.credentials_path = credentials_path
+        self.__initialize_session()
 
-        __session = Session.Builder()
-        __session.conf.stored_credentials_file = librespot_credentials
+    def __initialize_session(self) -> None:
+        session_builder = Session.Builder()
+        session_builder.conf.stored_credentials_file = self.credentials_path
 
-        if isfile(librespot_credentials):
-            __session = __session.stored_file().create()
+        if isfile(self.credentials_path):
+            session = session_builder.stored_file().create()
         else:
-            print("Please place you credentials.json!")
+            raise FileNotFoundError("Please fill your credentials.json location!")
 
-        Download_JOB(__session)
+        Download_JOB(session)
 
     def download_track(
         self, link_track,
@@ -77,6 +82,7 @@ class SpoLogin:
             preferences.recursive_download = recursive_download
             preferences.not_interface = not_interface
             preferences.method_save = method_save
+            preferences.is_episode = False
 
             if not is_thread:
                 track = DW_TRACK(preferences).dw()
@@ -118,6 +124,7 @@ class SpoLogin:
             preferences.not_interface = not_interface
             preferences.method_save = method_save
             preferences.make_zip = make_zip
+            preferences.is_episode = False
 
             if not is_thread:
                 album = DW_ALBUM(preferences).dw()
@@ -176,6 +183,7 @@ class SpoLogin:
             preferences.not_interface = not_interface
             preferences.method_save = method_save
             preferences.make_zip = make_zip
+            preferences.is_episode = False
 
             if not is_thread:
                 playlist = DW_PLAYLIST(preferences).dw()
@@ -183,6 +191,46 @@ class SpoLogin:
                 playlist = DW_PLAYLIST(preferences).dw2()
 
             return playlist
+        except Exception as e:
+            traceback.print_exc()
+            raise e
+    
+    def download_episode(
+        self, link_episode,
+        output_dir=stock_output,
+        quality_download=stock_quality,
+        recursive_quality=stock_recursive_quality,
+        recursive_download=stock_recursive_download,
+        not_interface=stock_not_interface,
+        method_save=method_save,
+        is_thread=is_thread
+    ) -> Episode:
+        try:
+            link_is_valid(link_episode)
+            ids = get_ids(link_episode)
+            episode_json = Spo.get_episode(ids)
+            episode_metadata = tracking_episode(ids)
+
+            preferences = Preferences()
+
+            preferences.link = link_episode
+            preferences.song_metadata = episode_metadata
+            preferences.quality_download = quality_download
+            preferences.output_dir = output_dir
+            preferences.ids = ids
+            preferences.json_data = episode_json
+            preferences.recursive_quality = recursive_quality
+            preferences.recursive_download = recursive_download
+            preferences.not_interface = not_interface
+            preferences.method_save = method_save
+            preferences.is_episode = True
+
+            if not is_thread:
+                episode = DW_EPISODE(preferences).dw()
+            else:
+                episode = DW_EPISODE(preferences).dw2()
+
+            return episode
         except Exception as e:
             traceback.print_exc()
             raise e
