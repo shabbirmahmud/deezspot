@@ -29,33 +29,34 @@ def md5hex(data: str):
 	return hashed
 
 def gen_song_hash(md5, quality, ids, media):
-	data = b"\xa4".join(
-		a.encode()
-		for a in [
-			md5, quality, ids, media
-		]
-	)
+    data = b"\xa4".join(
+        a.encode()
+        for a in [
+            md5, quality, ids, media
+        ]
+        if a  # Ensure a is not None or empty
+    )
 
-	hashed = (
-		__md5(data)
-		.hexdigest()
-		.encode()
-	)
+    hashed = (
+        __md5(data)
+        .hexdigest()
+        .encode()
+    )
 
-	data = b"\xa4".join(
-		[hashed, data]
-	) + b"\xa4"
+    data = b"\xa4".join(
+        [hashed, data]
+    ) + b"\xa4"
 
-	if len(data) % 16:
-		data += b"\x00" * (16 - len(data) % 16)
+    if len(data) % 16:
+        data += b"\x00" * (16 - len(data) % 16)
 
-	c = __newAES(__secret_key2, __MODE_ECB)
+    c = __newAES(__secret_key2, __MODE_ECB)
 
-	media_url = __b2a_hex(
-		c.encrypt(data)
-	).decode()
+    media_url = __b2a_hex(
+        c.encrypt(data)
+    ).decode()
 
-	return media_url
+    return media_url
 
 def __calcbfkey(songid):
 	h = md5hex(songid)

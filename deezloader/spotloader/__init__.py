@@ -308,6 +308,23 @@ class SpoLogin:
                 smart.type = "playlist"
                 smart.playlist = playlist
 
+            elif "episode/" in link:
+                if not "spotify.com" in link:
+                    raise InvalidLink(link)
+
+                episode = self.download_episode(
+                    link,
+                    output_dir=output_dir,
+                    quality_download=quality_download,
+                    recursive_quality=recursive_quality,
+                    recursive_download=recursive_download,
+                    not_interface=not_interface,
+                    method_save=method_save
+                )
+
+                smart.type = "episode"
+                smart.episode = episode
+
             return smart
         except Exception as e:
             traceback.print_exc()

@@ -248,7 +248,13 @@ class API_GW:
         }
 
         infos = cls.__get_api("episode.getData", json_data)
-
+        
+        if infos:
+            infos['MEDIA_VERSION'] = '1' 
+            infos['SNG_ID'] = infos.get('EPISODE_ID') 
+            if 'EPISODE_DIRECT_STREAM_URL' in infos:
+                infos['MD5_ORIGIN'] = 'episode' 
+                
         return infos
 
     @classmethod
@@ -257,9 +263,12 @@ class API_GW:
 
         return song_url
 
-    @staticmethod
-    def song_exist(song_url):
-        crypted_audio = req_get(song_url)
+    @classmethod 
+    def song_exist(cls, song_link):
+        if song_link and 'spreaker.com' in song_link:
+            return req_get(song_link, stream=True)
+        
+        crypted_audio = req_get(song_link)
 
         if len(crypted_audio.content) == 0:
             raise TrackNotFound

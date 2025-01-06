@@ -134,52 +134,46 @@ class EASY_DW:
 
         return self.__c_track
 
-def download_try(self) -> Track:
-    try:
-        # Get track ID and stream
-        track_id = TrackId.from_base62(self.__ids)
-        stream = Download_JOB.session.content_feeder().load_track(
-            track_id,
-            VorbisOnlyAudioQuality(self.__dw_quality),
-            False,
-            None
-        )
-        
-        # Create directory if it doesn't exist
-        dir_path = dirname(self.__song_path)
-        os.makedirs(dir_path, exist_ok=True)
+    def download_try(self) -> Track:
+        if isfile(self.__song_path) and check_track(self.__c_track):
+            if self.__recursive_download:
+                return self.__c_track
 
-        # Download to temporary file first
-        temp_file = f"{self.__song_path}.tmp"
-        with open(temp_file, "wb") as f:
+            ans = input(
+                f"Track \"{self.__song_path}\" already exists, do you want to redownload it?(y or n):"
+            )
+
+            if not ans in answers:
+                return self.__c_track
+
+        track_id = TrackId.from_base62(self.__ids)
+
+        try:
+            stream = Download_JOB.session.content_feeder().load_track(
+                track_id,
+                VorbisOnlyAudioQuality(self.__dw_quality),
+                False,
+                None
+            )
+        except RuntimeError:
+            raise TrackNotFound(self.__link)
+
+        total_size = stream.input_stream.size
+
+        # Ensure the directory exists before writing the file
+        os.makedirs(dirname(self.__song_path), exist_ok=True)
+
+        with open(self.__song_path, "wb") as f:
             c_stream = stream.input_stream.stream()
-            total_size = stream.input_stream.size
             data = c_stream.read(total_size)
             c_stream.close()
             f.write(data)
 
-        # Convert temp file to final ogg
-        if os.path.exists(temp_file):
-            ffmpeg_cmd = f'ffmpeg -y -hide_banner -loglevel error -i "{temp_file}" -c:a copy "{self.__song_path}"'
-            system(ffmpeg_cmd)
-            
-            # Remove temp file after conversion
-            if os.path.exists(self.__song_path):
-                os.remove(temp_file)
-                
-                # Write tags after successful download
-                write_tags(self.__c_track)
-                return self.__c_track
-            else:
-                raise RuntimeError("Failed to convert audio file")
-        else:
-            raise RuntimeError("Failed to download audio file")
+        self.__convert_audio()
 
-    except Exception as e:
-        # Clean up temp file if it exists
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-        raise TrackNotFound(self.__link) from e
+        self.__write_track()
+
+        return self.__c_track
 
     def download_eps(self) -> Episode:
         if isfile(self.__song_path) and check_track(self.__c_episode):

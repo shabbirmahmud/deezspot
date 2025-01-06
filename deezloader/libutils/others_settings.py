@@ -23,5 +23,5 @@ stock_recursive_quality = False
 stock_recursive_download = False
 stock_not_interface = False
 stock_zip = False
-method_save = 2
+method_save = 3
 is_thread = False # WARNING FOR TRUE, LOOP ON DEFAULT

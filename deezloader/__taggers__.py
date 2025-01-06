@@ -204,32 +204,28 @@ def __write_ogg(song, song_metadata):
     audio = OggVorbis(song)
     audio.delete()
 
-    if 'music' in song_metadata:
-        audio['title'] = song_metadata['music']
-    if 'artist' in song_metadata:
-        audio['artist'] = song_metadata['artist']
-    if 'album' in song_metadata:
-        audio['album'] = song_metadata['album']
-    if 'tracknum' in song_metadata:
-        audio['tracknumber'] = str(song_metadata['tracknum'])
-    if 'discnum' in song_metadata:
-        audio['discnumber'] = str(song_metadata['discnum'])
-    if 'year' in song_metadata:
-        audio['date'] = str(song_metadata['year'])
-    if 'genre' in song_metadata:
-        audio['genre'] = song_metadata['genre']
-    if 'isrc' in song_metadata:
-        audio['isrc'] = song_metadata['isrc']
-    if 'description' in song_metadata:
-        audio['description'] = song_metadata['description']
+    for key in ['music', 'artist', 'album', 'tracknum', 'discnum', 'year', 'genre', 'isrc', 'description']:
+        if key in song_metadata:
+            audio[key] = str(song_metadata[key])
 
     if 'image' in song_metadata:
         image = Picture()
         image.type = 3
         image.desc = 'Cover'
         image.mime = 'image/jpeg'
-        image.data = request(song_metadata['image']).content
-        audio['metadata_block_picture'] = [image.write()]
+        
+        try:
+            if isinstance(song_metadata['image'], bytes):
+                image.data = song_metadata['image']
+            else:
+                image.data = request(song_metadata['image']).content
+                
+            # Convert to base64 string for OGG format
+            import base64
+            img_data = base64.b64encode(image.write())
+            audio['metadata_block_picture'] = [img_data.decode('utf-8')]
+        except Exception as e:
+            print(f"Warning: Could not add cover image: {str(e)}")
 
     audio.save()
 

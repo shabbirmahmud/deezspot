@@ -9,6 +9,7 @@ from deezloader.models import (
     Playlist,
     Preferences,
     Smart,
+	Episode,
 )
 from deezloader.deezloader.__download__ import (
     DW_TRACK,
@@ -427,21 +428,57 @@ class DeeLogin:
 
 		return track
 
-	def download_episode(self, link_episode, output_dir, quality_download, recursive_quality, recursive_download, not_interface, method_save):
+	def download_episode(
+		self,
+		link_episode,
+		output_dir = stock_output,
+		quality_download = stock_quality,
+		recursive_quality = stock_recursive_quality,
+		recursive_download = stock_recursive_download,
+		not_interface = stock_not_interface,
+		method_save = method_save
+	) -> Episode:
+		
 		link_is_valid(link_episode)
 		ids = get_ids(link_episode)
+		
+		# Get episode metadata
+		try:
+			episode_metadata = API.tracking(ids)
+		except NoDataApi:
+			infos = self.__gw_api.get_episode_data(ids)
+			if not infos:
+				raise TrackNotFound("Episode not found")
+			episode_metadata = {
+				'music': infos.get('EPISODE_TITLE', ''),
+				'artist': infos.get('SHOW_NAME', ''),
+				'album': infos.get('SHOW_NAME', ''),
+				'date': infos.get('EPISODE_PUBLISHED_TIMESTAMP', '').split()[0],
+				'genre': 'Podcast',
+				'explicit': infos.get('SHOW_IS_EXPLICIT', '2'),
+				'disc': 1,
+				'track': 1,
+				'duration': int(infos.get('DURATION', 0)),
+				'isrc': None,
+				'image': infos.get('EPISODE_IMAGE_MD5', '')
+			}
+
+		# Set up preferences
 		preferences = Preferences()
-		preferences.output_dir = output_dir
+		preferences.link = link_episode
+		preferences.song_metadata = episode_metadata
 		preferences.quality_download = quality_download
+		preferences.output_dir = output_dir
+		preferences.ids = ids
 		preferences.recursive_quality = recursive_quality
 		preferences.recursive_download = recursive_download
 		preferences.not_interface = not_interface
 		preferences.method_save = method_save
-		preferences.ids = ids
-		
-		episode_downloader = DW_EPISODE(preferences)
-		
-		return episode_downloader.dw()
+
+		# Download episode
+		episode = DW_EPISODE(preferences).dw()
+
+		return episode
 	
 	def download_smart(
 		self, link,

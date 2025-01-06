@@ -1,9 +1,9 @@
-#!/usr/bin/python3
-
 from tqdm import tqdm
 from deezloader.deezloader.dee_api import API
 from copy import deepcopy
 from os.path import isfile
+import requests
+import os
 from deezloader.deezloader.deegw_api import API_GW
 from deezloader.deezloader.deezer_settings import qualities
 from deezloader.libutils.others_settings import answers
@@ -19,6 +19,7 @@ from deezloader.models import (
     Album,
     Playlist,
     Preferences,
+	Episode,
 )
 from deezloader.deezloader.__utils__ import (
     check_track_ids,
@@ -33,75 +34,104 @@ from deezloader.libutils.utils import (
 
 class Download_JOB:
 
-	@classmethod
-	def __get_url(
-		cls,
-		c_track: Track,
-		quality_download: str
-	) -> dict:
+    @classmethod
+    def __get_url(
+        cls,
+        c_track: Track,  
+        quality_download: str
+    ) -> dict:
+        # Special handling for episodes
+        if c_track.get('__TYPE__') == 'episode':
+            direct_url = c_track.get('EPISODE_DIRECT_STREAM_URL')
+            if direct_url:
+                return {
+                    "media": [
+                        {
+                            "sources": [
+                                {
+                                    "url": direct_url
+                                }
+                            ]
+                        }
+                    ]
+                }
+        else:
+            # Original logic for tracks
+            c_md5, c_media_version = check_track_md5(c_track)
+            track_id_key = check_track_ids(c_track)
+            c_ids = c_track.get(track_id_key, "")
+            n_quality = qualities[quality_download]['n_quality']
 
-		c_md5, c_media_version = check_track_md5(c_track)
-		c_ids = check_track_ids(c_track)
-		n_quality = qualities[quality_download]['n_quality']
+            if not c_md5:
+                raise ValueError("MD5_ORIGIN is missing")
+            if not c_media_version:
+                raise ValueError("MEDIA_VERSION is missing")
+            if not c_ids:
+                raise ValueError(f"{track_id_key} is missing")
 
-		c_song_hash = gen_song_hash(
-			c_md5, n_quality,
-			c_ids, c_media_version
-		)
+            c_song_hash = gen_song_hash(
+                c_md5, n_quality,
+                c_ids, c_media_version
+            )
 
-		c_media_url = API_GW.get_song_url(c_md5[0], c_song_hash)
+            c_media_url = API_GW.get_song_url(c_md5[0], c_song_hash)
 
-		c_media_json = {
-			"media": [
-				{
-					"sources": [
-						{
-							"url": c_media_url
-						}
-					]
-				}
-			]
-		}
+            return {
+                "media": [
+                    {
+                        "sources": [
+                            {
+                                "url": c_media_url
+                            }
+                        ]
+                    }
+                ]
+            }
 
-		return c_media_json
+    @classmethod
+    def check_sources(
+        cls,
+        infos_dw: list,
+        quality_download: str  
+    ) -> list:
+        medias = []
+        
+        for track in infos_dw:
+            if track.get('__TYPE__') == 'episode':
+                media_json = cls.__get_url(track, quality_download)
+                medias.append(media_json)
+                continue
 
-	@classmethod
-	def check_sources(
-		cls,
-		infos_dw: list,
-		quality_download: str
-	) -> list:
+        tracks_token = [
+            check_track_token(c_track)
+            for c_track in infos_dw
+        ]
 
-		tracks_token = [
-			check_track_token(c_track)
-			for c_track in infos_dw
-		]
+        try:
+            medias = API_GW.get_medias_url(tracks_token, quality_download)
 
-		try:
-			medias = API_GW.get_medias_url(tracks_token, quality_download)
+            for a in range(
+                len(medias)
+            ):
+                if "errors" in medias[a]:
+                    c_media_json = cls.__get_url(infos_dw[a], quality_download)
+                    medias[a] = c_media_json
+                else:
+                    if not medias[a]['media']:
+                        c_media_json = cls.__get_url(infos_dw[a], quality_download)
+                        medias[a] = c_media_json
 
-			for a in range(
-				len(medias)
-			):
-				if "errors" in medias[a]:
-					c_media_json = cls.__get_url(infos_dw[a], quality_download)
-					medias[a] = c_media_json
-				else:
-					if not medias[a]['media']:
-						c_media_json = cls.__get_url(infos_dw[a], quality_download)
-						medias[a] = c_media_json
+                    elif len(medias[a]['media'][0]['sources']) == 1:
+                        c_media_json = cls.__get_url(infos_dw[a], quality_download)
+                        medias[a] = c_media_json
+        except NoRightOnMedia:
+            medias = []
 
-					elif len(medias[a]['media'][0]['sources']) == 1:
-						c_media_json = cls.__get_url(infos_dw[a], quality_download)
-						medias[a] = c_media_json
-		except NoRightOnMedia:
-			medias = []
+            for c_track in infos_dw:
+                c_media_json = cls.__get_url(c_track, quality_download)
+                medias.append(c_media_json)
 
-			for c_track in infos_dw:
-				c_media_json = cls.__get_url(c_track, quality_download)
-				medias.append(c_media_json)
-
-		return medias
+        return medias
 
 class EASY_DW:
 	def __init__(
@@ -111,16 +141,31 @@ class EASY_DW:
 	) -> None:
 
 		self.__infos_dw = infos_dw
-
 		self.__ids = preferences.ids
 		self.__link = preferences.link
 		self.__output_dir = preferences.output_dir
 		self.__method_save = preferences.method_save
-		self.__song_metadata = preferences.song_metadata
 		self.__not_interface = preferences.not_interface
 		self.__quality_download = preferences.quality_download
 		self.__recursive_quality = preferences.recursive_quality
 		self.__recursive_download = preferences.recursive_download
+
+		# Check if content is episode
+		if self.__infos_dw.get('__TYPE__') == 'episode':
+			self.__song_metadata = {
+				'music': self.__infos_dw.get('EPISODE_TITLE', ''),
+				'artist': self.__infos_dw.get('SHOW_NAME', ''),
+				'album': self.__infos_dw.get('SHOW_NAME', ''),
+				'date': self.__infos_dw.get('EPISODE_PUBLISHED_TIMESTAMP', '').split()[0],
+				'genre': 'Podcast',
+				'explicit': self.__infos_dw.get('SHOW_IS_EXPLICIT', '2'),
+				'disc': 1,
+				'track': 1,
+				'duration': int(self.__infos_dw.get('DURATION', 0)),
+				'isrc': None
+			}
+		else:
+			self.__song_metadata = preferences.song_metadata
 
 		self.__c_quality = qualities[self.__quality_download]
 		self.__fallback_ids = self.__ids
@@ -153,7 +198,10 @@ class EASY_DW:
 		self.__c_track.set_fallback_ids(self.__fallback_ids)
 
 	def easy_dw(self) -> Track:
-		pic = self.__infos_dw['ALB_PICTURE']
+		if self.__infos_dw.get('__TYPE__') == 'episode':
+			pic = self.__infos_dw.get('EPISODE_IMAGE_MD5', '')
+		else:
+			pic = self.__infos_dw['ALB_PICTURE']
 		image = API.choose_img(pic)
 		self.__song_metadata['image'] = image
 		song = f"{self.__song_metadata['music']} - {self.__song_metadata['artist']}"
@@ -162,7 +210,14 @@ class EASY_DW:
 			print(f"Downloading: {song}")
 
 		try:
-			self.download_try()
+			if self.__infos_dw.get('__TYPE__') == 'episode':
+				try:
+					return self.download_episode_try()
+				except Exception as e:
+					self.__c_track.success = False
+					raise e
+			else:
+				self.download_try()
 		except TrackNotFound:
 			try:
 				self.__fallback_ids = API.not_found(song, self.__song_metadata['music'])
@@ -188,6 +243,7 @@ class EASY_DW:
 		return self.__c_track
 
 	def download_try(self) -> Track:
+		# Check if file exists
 		if isfile(self.__song_path) and check_track(self.__c_track):
 			if self.__recursive_download:
 				return self.__c_track
@@ -199,60 +255,140 @@ class EASY_DW:
 			if not ans in answers:
 				return self.__c_track
 
-		media_list = self.__infos_dw['media_url']['media']
-		song_link = media_list[0]['sources'][0]['url']
+		try:
+			# Get media URL and attempt download
+			media_list = self.__infos_dw['media_url']['media']
+			song_link = media_list[0]['sources'][0]['url']
+			
+			try:
+				crypted_audio = API_GW.song_exist(song_link)
+			except TrackNotFound:
+				song = self.__song_metadata['music']
+				artist = self.__song_metadata['artist']
+				
+				# Handle FLAC unavailability
+				if self.__file_format == '.flac':
+					print(f"\n⚠ {song} - {artist} is not available in FLAC format. Trying MP3...")
+					self.__quality_download = 'MP3_320'
+					self.__file_format = '.mp3'
+					self.__song_path = self.__song_path.rsplit('.', 1)[0] + '.mp3'
+					
+					media = Download_JOB.check_sources(
+						[self.__infos_dw], 'MP3_320'
+					)
+					
+					if media:
+						self.__infos_dw['media_url'] = media[0]
+						song_link = media[0]['media'][0]['sources'][0]['url']
+						crypted_audio = API_GW.song_exist(song_link)
+					else:
+						raise TrackNotFound(f"Track {song} - {artist} not available")
+				
+				else:
+					msg = f"\n⚠ The {song} - {artist} can't be downloaded in {self.__quality_download} quality :( ⚠\n"
+					
+					if not self.__recursive_quality:
+						raise QualityNotFound(msg=msg)
+					
+					print(msg)
+					
+					# Try different qualities
+					for c_quality in qualities:
+						if self.__quality_download == c_quality:
+							continue
+							
+						print(f"🛈 Trying to download {song} - {artist} in {c_quality}")
+						
+						media = Download_JOB.check_sources(
+							[self.__infos_dw], c_quality
+						)
+						
+						if media:
+							self.__infos_dw['media_url'] = media[0]
+							song_link = media[0]['media'][0]['sources'][0]['url']
+							try:
+								crypted_audio = API_GW.song_exist(song_link)
+								self.__c_quality = qualities[c_quality]
+								self.__set_quality()
+								break
+							except TrackNotFound:
+								if c_quality == "MP3_128":
+									raise TrackNotFound(f"Error with {song} - {artist}", self.__link)
+								continue
+			
+			# Process download
+			c_crypted_audio = crypted_audio.iter_content(2048)
+			self.__fallback_ids = check_track_ids(self.__infos_dw)
+			
+			# Write track and tags
+			try:
+				self.__write_track()
+				decryptfile(
+					c_crypted_audio, self.__fallback_ids, self.__song_path
+				)
+				self.__add_more_tags()
+				write_tags(self.__c_track)
+			except Exception as e:
+				if isfile(self.__song_path):
+					os.remove(self.__song_path)
+				raise TrackNotFound(f"Failed to process {self.__song_path}: {str(e)}")
+				
+			return self.__c_track
+			
+		except Exception as e:
+			raise TrackNotFound(self.__link) from e
+	
+	def download_episode_try(self) -> Track:
+		"""Handle episode download specifically"""
+		if isfile(self.__song_path) and check_track(self.__c_track):
+			if self.__recursive_download:
+				self.__c_track.success = True
+				return self.__c_track
+
+			ans = input(
+				f"Episode \"{self.__song_path}\" already exists, do you want to redownload it?(y or n):"
+			)
+
+			if not ans in answers:
+				self.__c_track.success = True
+				return self.__c_track
 
 		try:
-			crypted_audio = API_GW.song_exist(song_link)
-		except TrackNotFound:
-			song = self.__song_metadata['music']
-			artist = self.__song_metadata['artist']
-			msg = f"\n⚠ The {song} - {artist} can't be downloaded in {self.__quality_download} quality :( ⚠\n"
+			# Get direct stream URL
+			direct_url = self.__infos_dw.get('EPISODE_DIRECT_STREAM_URL')
+			if not direct_url:
+				raise TrackNotFound("No direct stream URL found")
 
-			if not self.__recursive_quality:
-				raise QualityNotFound(msg = msg)
+			# Download episode
+			response = requests.get(direct_url, stream=True)
+			if response.status_code != 200:
+				raise TrackNotFound("Failed to download episode")
 
-			print(msg)
+			# Show progress bar
+			total_size = int(response.headers.get('content-length', 0))
+			with open(self.__song_path, 'wb') as f:
+				with tqdm(
+					total=total_size,
+					unit='iB',
+					unit_scale=True,
+					desc=f"Downloading {self.__song_metadata['music']}"
+				) as pbar:
+					for chunk in response.iter_content(8192):
+						size = f.write(chunk)
+						pbar.update(size)
 
-			for c_quality in qualities:
-				if self.__quality_download == c_quality:
-					continue
+			# Set success flag and write tags
+			self.__c_track.success = True
+			write_tags(self.__c_track)
+			return self.__c_track
 
-				print(f"🛈 Trying to download {song} - {artist} in {c_quality}")
-
-				media = Download_JOB.check_sources(
-					[self.__infos_dw], c_quality
-				)
-
-				self.__infos_dw['media_url'] = media[0]
-				c_media = self.__infos_dw['media_url']
-				media_list = c_media['media']
-				song_link = media_list[0]['sources'][0]['url']
-
-				try:
-					crypted_audio = API_GW.song_exist(song_link)
-					self.__c_quality = qualities[c_quality]
-					self.__set_quality()
-					break
-				except TrackNotFound:
-					if c_quality == "MP3_128":
-						raise TrackNotFound("Error with this song", self.__link)
-
-		c_crypted_audio = crypted_audio.iter_content(2048)
-		self.__fallback_ids = check_track_ids(self.__infos_dw)
-		self.__write_track()
-
-		decryptfile(
-			c_crypted_audio, self.__fallback_ids, self.__song_path
-		)
-
-		self.__add_more_tags()
-		write_tags(self.__c_track)
-
-		return self.__c_track
+		except Exception as e:
+			if isfile(self.__song_path):
+				os.remove(self.__song_path)
+			raise TrackNotFound(f"Episode download failed: {str(e)}")
 
 	def __add_more_tags(self) -> None:
-		contributors = self.__infos_dw['SNG_CONTRIBUTORS']
+		contributors = self.__infos_dw.get('SNG_CONTRIBUTORS', {})
 
 		if "author" in contributors:
 			self.__song_metadata['author'] = " & ".join(
@@ -292,7 +428,7 @@ class EASY_DW:
 		self.__song_metadata['lyricist'] = ""
 		self.__song_metadata['lyric_sync'] = []
 
-		if self.__infos_dw['LYRICS_ID'] != 0:
+		if self.__infos_dw.get('LYRICS_ID', 0) != 0:
 			need = API_GW.get_lyric(self.__ids)
 
 			if "LYRICS_SYNC_JSON" in need:
@@ -318,6 +454,8 @@ class DW_TRACK:
 	def dw(self) -> Track:
 		infos_dw = API_GW.get_song_data(self.__ids)
 
+		print(infos_dw)
+
 		media = Download_JOB.check_sources(
 			[infos_dw], self.__quality_download
 		)
@@ -328,7 +466,7 @@ class DW_TRACK:
 
 		if not track.success:
 			song = f"{self.__song_metadata['music']} - {self.__song_metadata['artist']}"
-			error_msg = f"Cannot download {song}"
+			error_msg = f"Cannot download {song}, maybe it's not available in this format?"
 
 			raise TrackNotFound(message = error_msg)
 
@@ -492,45 +630,46 @@ class DW_PLAYLIST:
 		return playlist
 
 class DW_EPISODE:
-    def __init__(
-        self,
-        preferences: Preferences
-    ) -> None:
+    def __init__(self, preferences: Preferences) -> None:
         self.__preferences = preferences
         self.__ids = self.__preferences.ids
         self.__output_dir = self.__preferences.output_dir
         self.__method_save = self.__preferences.method_save
-        self.__song_metadata = self.__preferences.song_metadata
         self.__not_interface = self.__preferences.not_interface
         self.__quality_download = self.__preferences.quality_download
 
-    @classmethod
-    def check_episode_id(cls, infos: dict):
-        if "FALLBACK" in infos:
-            episode_id = infos['FALLBACK']['EPISODE_ID']
-        else:
-            episode_id = infos['EPISODE_ID']
-
-        return episode_id
-
     def dw(self) -> Track:
+        # Get episode data
         infos_dw = API_GW.get_episode_data(self.__ids)
-
-        episode_id = self.check_episode_id(infos_dw)
-        infos_dw['EPISODE_ID'] = episode_id
-
-        media = Download_JOB.check_sources(
-            [infos_dw], self.__quality_download
-        )
-
+        infos_dw['__TYPE__'] = 'episode'
+        
+        # Set up media source
+        media = Download_JOB.check_sources([infos_dw], self.__quality_download)
+        if not media:
+            raise TrackNotFound("No media sources found for episode")
         infos_dw['media_url'] = media[0]
+        
+        # Set preferences for episode
+        self.__preferences.link = f"https://www.deezer.com/en/episode/{self.__ids}"
+        self.__preferences.song_metadata = {
+            'music': infos_dw.get('EPISODE_TITLE', ''),
+            'artist': infos_dw.get('SHOW_NAME', ''), 
+            'album': infos_dw.get('SHOW_NAME', ''),
+            'date': infos_dw.get('EPISODE_PUBLISHED_TIMESTAMP', '').split()[0],
+            'genre': 'Podcast',
+            'explicit': infos_dw.get('SHOW_IS_EXPLICIT', '2'),
+            'disc': 1,
+            'track': 1,
+            'duration': int(infos_dw.get('DURATION', 0)),
+            'isrc': None,
+            'image': infos_dw.get('EPISODE_IMAGE_MD5', '')
+        }
 
+        # Download episode
         episode = EASY_DW(infos_dw, self.__preferences).easy_dw()
-
+        
         if not episode.success:
-            episode_title = self.__song_metadata['title']
-            error_msg = f"Cannot download episode: {episode_title}"
-
+            error_msg = f"Cannot download episode: {infos_dw.get('EPISODE_TITLE', 'Unknown Title')}"
             raise TrackNotFound(message=error_msg)
 
         return episode

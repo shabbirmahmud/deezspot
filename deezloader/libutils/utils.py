@@ -40,21 +40,30 @@ def __check_dir(directory):
         makedirs(directory)
 
 def var_excape(string):
-    string = (
-        string
-        .replace("\\", "")
-        .replace("/", "")
-        .replace(":", "")
-        .replace("*", "")
-        .replace("?", "")
-        .replace("\"", "")
-        .replace("<", "")
-        .replace(">", "")
-        .replace("|", "")
-        .replace("&", "")
-    )
-
-    return string
+    # Enhance character replacement for filenames
+    replacements = {
+        "\\": "",
+        "/": "",
+        ":": "",
+        "*": "",
+        "?": "",
+        "\"": "",
+        "<": "",
+        ">": "",
+        "|": "-",
+        "&": "and",
+        "$": "s",
+        "'": "",
+        "`": "",
+    }
+    
+    for old, new in replacements.items():
+        string = string.replace(old, new)
+    
+    # Remove any other non-printable characters
+    string = ''.join(char for char in string if char.isprintable())
+    
+    return string.strip()
 
 def convert_to_date(date: str):
     if date == "0000-00-00":
