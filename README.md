@@ -18,6 +18,10 @@ A powerful Python library for downloading music from Deezer and Spotify. Clone o
 ```bash
 pip install deezloadclone
 ```
+Or
+```bash
+pip install git+https://github.com/farihdzkyy/deezloadclone
+```
 
 ## 🔑 Authentication Setup
 
@@ -27,7 +31,7 @@ pip install deezloadclone
 ```python
 from deezloader.deezloader import DeeLogin
 
-dl = DeeLogin(arl='your_arl_token', email='', password='')
+dl = DeeLogin(arl='your_arl_token', email='your_Deezer_email', password='your_Deezer_password')
 ```
 
 ### Spotify Authentication
