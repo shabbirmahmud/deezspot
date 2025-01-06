@@ -13,7 +13,7 @@ dl = DeeLogin(
             password='Farih2009@',
 )
 
-# Download single track with MP3 320kbps
+# Download single track with MP3 320kbp
 try:
     down = dl.download_episode(
                 link_episode='https://www.deezer.com/en/episode/698290121',

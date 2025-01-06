@@ -6,8 +6,8 @@ README.close()
 
 setup(
 	name = "deezloadclone",
-	version = "2024.05.05",
-	description = "Downloads songs, albums or playlists from deezer and spotify (cloned from https://github.com/An0nimia/deezloader)",
+	version = "2025.01.01",
+	description = "Downloads songs, albums or playlists from deezer and spotify (clone from https://pypi.org/project/deezloader/)",
 	long_description = readmed,
 	long_description_content_type = "text/markdown",
 	license = "GNU Affero General Public License v3",

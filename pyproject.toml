@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deezloadclone"
+version = "2025.01.01"
+description = "Downloads songs, albums or playlists from deezer and spotify (clone from deezloader)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "GNU Affero General Public License v3"}
+authors = [
+    {name = "farihdzaky", email = "farihdzakyy@gmail.com"}
+]
+
+dependencies = [
+    "mutagen",
+    "pycryptodome",
+    "requests",
+    "spotipy",
+    "tqdm",
+    "fastapi",
+    "uvicorn[standard]",
+    "spotipy-anon",
+    "librespot"
+]
+
+[project.urls]
+Homepage = "https://github.com/farihdzkyy/deezloadclone"
+Repository = "https://github.com/farihdzkyy/deezloadclone.git"
+Documentation = "https://github.com/farihdzkyy/deezloadclone/blob/main/README.md"
+
+[project.scripts]
+deez-dw = "deezloader.bin.deez-dw:main"
+deez-web = "deezloader.bin.deez-web:main"
+
+[tool.setuptools]
+packages = [
+    "deezloader",
+    "deezloader.models",
+    "deezloader.spotloader", 
+    "deezloader.deezloader",
+    "deezloader.libutils"
+]

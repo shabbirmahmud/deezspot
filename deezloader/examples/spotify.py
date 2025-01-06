@@ -36,3 +36,12 @@ try:
     print(f"Successfully downloaded: {playlist.playlist_name}")
 except Exception as e:
     print(f"Error downloading playlist: {str(e)}")
+
+# Example usage of SpotLoader to download a podcast episode with high quality
+try:
+    episode = spo.download_episode("https://open.spotify.com/episode/1hgO8Y3CCymyxn934lNtDq?si=xAXhawk-T7u3aq8sMl1HiQ", 
+                             output_dir='./downloads/episodes', 
+                             quality_download='HIGH')
+    print(f"Successfully downloaded: {episode.episode_name}")
+except Exception as e:
+    print(e)
