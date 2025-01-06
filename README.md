@@ -3,6 +3,10 @@
 
 A powerful Python library for downloading music from Deezer and Spotify. Clone of the original deezloader with additional features and improvements.
 
+### ⚠️ IMPORTANT NOTES !!!!! ⚠️
+```
+USE AS YOUR OWWN RISK I'M NOT RESPONSIBLE TO ANY YOUR PROBLEM AT SPOTIFY OR DEEZER ACCOUNT !
+```
 ## ✨ Features
 
 - Download songs, albums, playlists from Deezer
@@ -202,3 +206,13 @@ LICENSE
 - librespot-python
 - librespot-auth
 ```
+## ⭐️ Stars !
+<h2 id="star_hist">Star History</h2>
+
+<a href="https://star-history.com/#farihdzkyy/deezloadclone&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=farihdzkyy/deezloadclone&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=farihdzkyy/deezloadclone&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=farihdzkyy/deezloadclone&type=Date"/>
+ </picture>
+</a>
