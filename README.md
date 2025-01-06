@@ -64,7 +64,7 @@ cargo build --release
 
 ### Downloading with Deezer 
 ```python
-from deezloader.deezloader import DeeLogin
+from deezspot.deezloader import DeeLogin
 
 dl = DeeLogin(arl='your_arl_token', email='', password='')
 
@@ -113,7 +113,7 @@ import traceback
 
 # Add the local deezloader directory to the sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from deezloader.spotloader import SpoLogin
+from deezspot.spotloader import SpoLogin
 
 try:
     # Initialize Spotify client
