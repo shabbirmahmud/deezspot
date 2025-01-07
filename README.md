@@ -214,9 +214,7 @@ LICENSE
 - Spotify Anon
 - librespot-python
 - librespot-auth
-```
-## ⭐️ Stars !
 
-## Star History
+## ⭐️ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=farihdzkyy/deezspot&type=Date)](https://star-history.com/#farihdzkyy/deezspot&Date)
