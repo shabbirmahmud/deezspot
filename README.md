@@ -24,7 +24,7 @@ pip install deezspot
 ```
 Or
 ```bash
-pip install git+https://github.com/farihdzkyy/deezspot
+pip install git+https://github.com/jakiepari/deezspot
 ```
 
 ## 🔑 Authentication Setup
