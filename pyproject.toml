@@ -3,14 +3,14 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "deezloadclone"
+name = "deezspot"
 version = "2025.01.01"
 description = "Downloads songs, albums or playlists from deezer and spotify (clone from deezloader)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "GNU Affero General Public License v3"}
 authors = [
-    {name = "farihdzaky", email = "farihdzakyy@gmail.com"}
+    {name = "jakiepari", email = "farihmuhammad75@gmail.com"}
 ]
 
 dependencies = [
@@ -26,19 +26,19 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/farihdzkyy/deezloadclone"
-Repository = "https://github.com/farihdzkyy/deezloadclone.git"
-Documentation = "https://github.com/farihdzkyy/deezloadclone/blob/main/README.md"
+Homepage = "https://github.com/jakiepari/deezspot"
+Repository = "https://github.com/jakiepari/deezspot.git"
+Documentation = "https://github.com/jakiepari/deezspot/blob/main/README.md"
 
 [project.scripts]
-deez-dw = "deezloader.bin.deez-dw:main"
-deez-web = "deezloader.bin.deez-web:main"
+deez-dw = "deezspot.bin.deez-dw:main"
+deez-web = "deezspot.bin.deez-web:main"
 
 [tool.setuptools]
 packages = [
-    "deezloader",
-    "deezloader.models",
-    "deezloader.spotloader", 
-    "deezloader.deezloader",
-    "deezloader.libutils"
+    "deezspot",
+    "deezspot.models",
+    "deezspot.spotloader", 
+    "deezspot.deezloader",
+    "deezspot.libutils"
 ]
