@@ -1,11 +1,10 @@
-
 # DeezSpot 🎵
 
-A powerful Python library for downloading music from Deezer and Spotify. Clone of the original deezloader with additional features and improvements.
+A powerful Python and Lightweight library for downloading music from Deezer and Spotify. Clone of the original deezloader with additional features and improvements.
 
 ### ⚠️ IMPORTANT NOTES !!!!! ⚠️
 ```
-USE AS YOUR OWWN RISK I'M NOT RESPONSIBLE TO ANY YOUR PROBLEM AT SPOTIFY OR DEEZER ACCOUNT !
+USE AS YOUR OWN RISK I'M NOT RESPONSIBLE TO ANY YOUR PROBLEM AT SPOTIFY OR DEEZER ACCOUNT !
 ```
 ## ✨ Features
 
@@ -33,7 +32,7 @@ pip install git+https://github.com/jakiepari/deezspot
 1. Get your Deezer ARL token from browser cookies after logging in to Deezer
 2. Use the token in your code:
 ```python
-from deezloader.deezloader import DeeLogin
+from deezspot.deezloader import DeeLogin
 
 dl = DeeLogin(arl='your_arl_token', email='your_Deezer_email', password='your_Deezer_password')
 ```
@@ -217,4 +216,4 @@ LICENSE
 
 ## ⭐️ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=jakiepari/deezspot&type=Date)](https://star-history.com/#farihdzkyy/deezspot&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=jakiepari/deezspot&type=Date)](https://star-history.com/#jakiepari/deezspot&Date)
