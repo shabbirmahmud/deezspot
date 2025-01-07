@@ -1,5 +1,5 @@
 
-# DeezloadClone 🎵
+# DeezSpot 🎵
 
 A powerful Python library for downloading music from Deezer and Spotify. Clone of the original deezloader with additional features and improvements.
 
@@ -99,6 +99,15 @@ dl.download_playlistdee(
 dl.download_artistdee(
     link_artist='https://www.deezer.com/artist/123456789',
     output_dir='./downloads/artists',
+    quality_download='MP3_320',
+    recursive_quality=True,
+    recursive_download=False
+)
+
+# Download episode
+dl.download_episode(
+    link_episode='https://www.deezer.com/episode/123456789',
+    output_dir='./downloads/episode',
     quality_download='MP3_320',
     recursive_quality=True,
     recursive_download=False
