@@ -31,8 +31,8 @@ Repository = "https://github.com/jakiepari/deezspot.git"
 Documentation = "https://github.com/jakiepari/deezspot/blob/main/README.md"
 
 [project.scripts]
-deez-dw = "deezspot.bin.deez-dw:main"
-deez-web = "deezspot.bin.deez-web:main"
+deez-dw = "deezspot.bin.deez_dw:main"
+deez-web = "deezspot.bin.deez_web:main"
 
 [tool.setuptools]
 packages = [
