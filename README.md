@@ -20,11 +20,11 @@ USE AS YOUR OWWN RISK I'M NOT RESPONSIBLE TO ANY YOUR PROBLEM AT SPOTIFY OR DEEZ
 ## 🚀 Installation
 
 ```bash
-pip install deezloadclone
+pip install deezspot
 ```
 Or
 ```bash
-pip install git+https://github.com/farihdzkyy/deezloadclone
+pip install git+https://github.com/farihdzkyy/deezspot
 ```
 
 ## 🔑 Authentication Setup
