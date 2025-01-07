@@ -5,21 +5,21 @@ readmed = README.read()
 README.close()
 
 setup(
-	name = "deezloadclone",
-	version = "2025.01.01",
+	name = "deezspot",
+	version = "1.1",
 	description = "Downloads songs, albums or playlists from deezer and spotify (clone from https://pypi.org/project/deezloader/)",
 	long_description = readmed,
 	long_description_content_type = "text/markdown",
 	license = "GNU Affero General Public License v3",
 	python_requires = ">=3.10",
-	author = "farihdzaky",
-	author_email = "farihdzakyy@gmail.com",
-	url = "https://github.com/farihdzkyy/deezloadclone",
+	author = "jakiepari",
+	author_email = "farihmuhammad75@gmail.com",
+	url = "https://github.com/jakiepari/deezspot",
 
 	packages = [
-		"deezloader",
-		"deezloader/models", "deezloader/spotloader",
-		"deezloader/deezloader", "deezloader/libutils"
+		"deezspot",
+		"deezspot/models", "deezspot/spotloader",
+		"deezspot/deezloader", "deezspot/libutils"
 	],
 
         install_requires = [
@@ -31,7 +31,7 @@ setup(
          ],
 
 	scripts = [
-		"deezloader/bin/deez-dw.py",
-		"deezloader/bin/deez-web.py"
+		"deezspot/bin/deez-dw.py",
+		"deezspot/bin/deez-web.py"
 	]
 )
