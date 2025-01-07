@@ -29,9 +29,4 @@ setup(
                 "spotipy-anon",
                 "librespot"
          ],
-
-	scripts = [
-		"deezspot/bin/deez-dw.py",
-		"deezspot/bin/deez-web.py"
-	]
 )
