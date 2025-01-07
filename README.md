@@ -217,4 +217,4 @@ LICENSE
 
 ## ⭐️ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=farihdzkyy/deezspot&type=Date)](https://star-history.com/#farihdzkyy/deezspot&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=jakiepari/deezspot&type=Date)](https://star-history.com/#farihdzkyy/deezspot&Date)
