@@ -216,12 +216,7 @@ LICENSE
 - librespot-auth
 ```
 ## ⭐️ Stars !
-<h2 id="star_hist">Star History</h2>
 
-<a href="https://star-history.com/#farihdzkyy/deezloadclone&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=farihdzkyy/deezloadclone&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=farihdzkyy/deezloadclone&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=farihdzkyy/deezloadclone&type=Date"/>
- </picture>
-</a>
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=farihdzkyy/deezspot&type=Date)](https://star-history.com/#farihdzkyy/deezspot&Date)
