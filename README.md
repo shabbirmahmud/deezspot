@@ -133,7 +133,7 @@ try:
     track = spo.download_track(
         link_track="https://open.spotify.com/track/4tCtwWceOPWzenK2HAIJSb",
         output_dir="./downloads/tracks",
-        quality_download="NORMA;",
+        quality_download="NORMAL",
         recursive_quality=False,
         recursive_download=False,
         not_interface=False,
