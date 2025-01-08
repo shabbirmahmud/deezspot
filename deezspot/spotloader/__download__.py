@@ -46,9 +46,8 @@ class EASY_DW:
         self.__method_save = preferences.method_save
         self.__song_metadata = preferences.song_metadata
         self.__not_interface = preferences.not_interface
-        self.__quality_download = preferences.quality_download
+        self.__quality_download = preferences.quality_download or "NORMAL"  
         self.__recursive_download = preferences.recursive_download
-
 
         self.__c_quality = qualities[self.__quality_download]
         self.__fallback_ids = self.__ids
@@ -58,7 +57,7 @@ class EASY_DW:
             self.__write_episode()
         else:
             self.__write_track()
-
+            
     def __set_quality(self) -> None:
         self.__dw_quality = self.__c_quality['n_quality']
         self.__file_format = self.__c_quality['f_format']
