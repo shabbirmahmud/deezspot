@@ -133,7 +133,7 @@ try:
     track = spo.download_track(
         link_track="https://open.spotify.com/track/4tCtwWceOPWzenK2HAIJSb",
         output_dir="./downloads/tracks",
-        quality_download="MP3_320",
+        quality_download="NORMA;",
         recursive_quality=False,
         recursive_download=False,
         not_interface=False,
@@ -144,7 +144,7 @@ try:
     album = spo.download_album(
         link_album="https://open.spotify.com/album/6n4YU8iRm07O7lR1zQZypN",
         output_dir="./downloads/albums",
-        quality_download="FLAC",
+        quality_download="NORMAL",
         recursive_quality=True,
         recursive_download=False,
         not_interface=False,
@@ -156,7 +156,7 @@ try:
     playlist = spo.download_playlist(
         link_playlist="https://open.spotify.com/playlist/1ZyEi4bBTYGTIlY23U1kwG",
         output_dir="./downloads/playlists",
-        quality_download="MP3_320",
+        quality_download="NORMAL",
         recursive_quality=True,
         recursive_download=False,
         not_interface=False,
@@ -168,7 +168,7 @@ try:
     episode = spo.download_episode(
         link_episode="https://open.spotify.com/episode/1hgO8Y3CCymyxn934lNtDq",
         output_dir="./downloads/episodes",
-        quality_download="MP3_320",
+        quality_download="NORMAL",
         recursive_quality=False,
         recursive_download=False,
         not_interface=False,
