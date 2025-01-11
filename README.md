@@ -60,7 +60,7 @@ cargo build --release
 ```
 
 # Or also you can use this code
-```
+```python
 from librespot.zeroconf import ZeroconfServer
 import time
 import logging
