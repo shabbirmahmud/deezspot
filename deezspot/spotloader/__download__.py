@@ -1,6 +1,7 @@
 import traceback
 from tqdm import tqdm
 import os 
+from time import sleep
 from copy import deepcopy
 from os.path import isfile, dirname
 from librespot.core import Session
@@ -9,7 +10,7 @@ from librespot.metadata import TrackId, EpisodeId
 from deezspot.spotloader.spotify_settings import qualities
 from deezspot.libutils.others_settings import answers
 from deezspot.__taggers__ import write_tags, check_track
-from librespot.audio.decoders import VorbisOnlyAudioQuality
+from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
 from os import (
     remove,
     system,
@@ -134,45 +135,42 @@ class EASY_DW:
         return self.__c_track
 
     def download_try(self) -> Track:
-        if isfile(self.__song_path) and check_track(self.__c_track):
-            if self.__recursive_download:
-                return self.__c_track
-
-            ans = input(
-                f"Track \"{self.__song_path}\" already exists, do you want to redownload it?(y or n):"
-            )
-
-            if not ans in answers:
-                return self.__c_track
-
-        track_id = TrackId.from_base62(self.__ids)
+        song = f"{self.__song_metadata['music']} - {self.__song_metadata['artist']}"
+        track_id = self.__ids
 
         try:
+            if isfile(self.__song_path) and check_track(self.__c_track):
+                if self.__recursive_download:
+                    return self.__c_track
+
+                ans = input(f'Track "{self.__song_path}" already exists, do you want to redownload it?(y or n):')
+                if ans.lower() not in ('y', 'yes'):
+                    return self.__c_track
+
+            track_id_obj = TrackId.from_base62(self.__ids)
             stream = Download_JOB.session.content_feeder().load_track(
-                track_id,
+                track_id_obj,
                 VorbisOnlyAudioQuality(self.__dw_quality),
                 False,
                 None
             )
-        except RuntimeError:
-            raise TrackNotFound(self.__link)
 
-        total_size = stream.input_stream.size
+            total_size = stream.input_stream.size
+            os.makedirs(dirname(self.__song_path), exist_ok=True)
 
-        # Ensure the directory exists before writing the file
-        os.makedirs(dirname(self.__song_path), exist_ok=True)
+            with open(self.__song_path, "wb") as f:
+                c_stream = stream.input_stream.stream()
+                data = c_stream.read(total_size)
+                c_stream.close()
+                f.write(data)
 
-        with open(self.__song_path, "wb") as f:
-            c_stream = stream.input_stream.stream()
-            data = c_stream.read(total_size)
-            c_stream.close()
-            f.write(data)
+            self.__convert_audio()
+            self.__write_track()
+            return self.__c_track
 
-        self.__convert_audio()
-
-        self.__write_track()
-
-        return self.__c_track
+        except Exception as e:
+            print(f"Error downloading {song}: {str(e)}")
+            raise e
 
     def download_eps(self) -> Episode:
         if isfile(self.__song_path) and check_track(self.__c_episode):
@@ -191,7 +189,7 @@ class EASY_DW:
         try:
             stream = Download_JOB.session.content_feeder().load_episode(
                 episode_id,
-                VorbisOnlyAudioQuality(self.__dw_quality),
+                AudioQuality(self.__dw_quality),
                 False,
                 None
             )

@@ -59,6 +59,29 @@ cargo build --release
 }
 ```
 
+# Or also you can use this code
+```
+from librespot.zeroconf import ZeroconfServer
+import time
+import logging
+import pathlib
+
+zs = ZeroconfServer.Builder().create()
+logging.warning("Transfer playback from desktop client to librespot-python via Spotify Connect in order to store session")
+
+while True:
+    time.sleep(1)
+    if zs._ZeroconfServer__session:
+        logging.warning(f"Grabbed {zs._ZeroconfServer__session} for {zs._ZeroconfServer__session.username()}")
+        
+        if pathlib.Path("credentials.json").exists():
+            logging.warning("Session stored in credentials.json. Now you can Ctrl+C")
+            break
+```
+Steps:
+Its same like using the code from librespot-auth. but you need a premium plan to use this code!
+Just play 1 song and then click connect to a device and select librespot-python then your credentials.json will be appear
+
 ## 📚 Usage Examples
 
 ### Downloading with Deezer 
@@ -188,6 +211,8 @@ except Exception as e:
 - NORMAL
 - HIGH
 - VERY_HIGH
+## NOTE !
+Sometimes when you using spotloader after downloading 20+ tracks, Will be giving an error about audio key. its because you're using free spotify!
 
 ## 🤝 Contributing
 
