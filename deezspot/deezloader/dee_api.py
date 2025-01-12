@@ -63,6 +63,13 @@ class API:
 		infos = cls.__get_api(url)
 
 		return infos
+	
+	@classmethod
+	def get_episode(cls, episode_id):
+		url = f"{cls.__api_link}episode/{episode_id}"
+		infos = cls.__get_api(url)
+
+		return infos
 
 	@classmethod
 	def get_artist(cls, ids):
