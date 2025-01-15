@@ -178,6 +178,16 @@ class EASY_DW:
 			self.__file_format,
 			self.__method_save
 		)
+	
+	def __set_episode_path(self) -> None:
+			self.__song_path = set_path(
+				self.__song_metadata,
+				self.__output_dir,
+				self.__song_quality,
+				self.__file_format,
+				self.__method_save,
+				is_episode=True
+			)
 
 	def __write_track(self) -> None:
 		self.__set_song_path()
@@ -189,6 +199,18 @@ class EASY_DW:
 		)
 
 		self.__c_track.set_fallback_ids(self.__fallback_ids)
+	
+	def __write_episode(self) -> None:
+			self.__set_episode_path()
+
+			self.__c_episode = Episode(
+				self.__song_metadata, self.__song_path,
+				self.__file_format, self.__song_quality,
+				self.__link, self.__ids
+			)
+
+			self.__c_episode.md5_image = self.__ids
+			self.__c_episode.set_fallback_ids(self.__fallback_ids)
 
 	def easy_dw(self) -> Track:
 		if self.__infos_dw.get('__TYPE__') == 'episode':
@@ -351,6 +373,7 @@ class EASY_DW:
 						pbar.update(size)
 
 			self.__c_track.success = True
+			self.__write_episode()
 			write_tags(self.__c_track)
 			return self.__c_track
 
