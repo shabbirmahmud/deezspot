@@ -46,7 +46,8 @@ class DeeLogin:
 		self,
 		arl = None,
 		email = None,
-		password = None
+		password = None,
+		ensure_premium = False
 	) -> None:
 
 		if arl:
@@ -56,6 +57,17 @@ class DeeLogin:
 				email = email,
 				password = password
 			)
+
+		self.ensure_premium = ensure_premium
+		self.__check_premium_status()
+
+	def __check_premium_status(self):
+		account_info = self.__gw_api.get_account_info()
+		if not account_info.get('is_premium', False):
+			if self.ensure_premium:
+				raise Exception("Premium account is required but not found.")
+			else:
+				print("Warning: You are not using a premium account. FLAC quality downloads will not be available.")
 
 	def download_trackdee(
 		self, link_track,
@@ -572,3 +584,4 @@ class DeeLogin:
 			smart.playlist = playlist
 
 		return smart
+
