@@ -19,12 +19,13 @@ from mutagen.id3 import (
 	TPE1, TYER, TDAT, TPOS, TPE2,
 	TPUB, TCOP, TXXX, TCOM, IPLS
 )
-
+# This tagging code is copied from https://github.com/Xoconoch/deezspot-fork-again/commits/main/deezspot/__taggers__.py Thank you for your work! thats great
 def __write_flac(song, data):
 	tag = FLAC(song)
 	tag.delete()
 	images = Picture()
 	images.type = 3
+	images.mime = 'image/jpeg'
 	images.data = data['image']
 	tag.clear_pictures()
 	tag.add_picture(images)
@@ -41,12 +42,13 @@ def __write_flac(song, data):
 	tag['composer'] = data['composer']
 	tag['copyright'] = data['copyright']
 	tag['bpm'] = f"{data['bpm']}"
-	tag['length'] = f"{data['duration']}"
+	tag['length'] = f"{int(data['duration'] * 1000)}"
 	tag['organization'] = data['label']
 	tag['isrc'] = data['isrc']
 	tag['lyricist'] = data['lyricist']
 	tag['version'] = data['version']
 	tag.save()
+
 
 def __write_mp3(song, data):
 	try:
@@ -204,27 +206,74 @@ def __write_ogg(song, song_metadata):
     audio = OggVorbis(song)
     audio.delete()
 
-    for key in ['music', 'artist', 'album', 'tracknum', 'discnum', 'year', 'genre', 'isrc', 'description']:
-        if key in song_metadata:
-            audio[key] = str(song_metadata[key])
+    # Standard Vorbis comment fields mapping
+    field_mapping = {
+        'music': 'title',
+        'artist': 'artist',
+        'album': 'album',
+        'tracknum': 'tracknumber',
+        'discnum': 'discnumber',
+        'year': 'date',
+        'genre': 'genre',
+        'isrc': 'isrc',
+        'description': 'description',
+        'ar_album': 'albumartist',
+        'composer': 'composer',
+        'copyright': 'copyright',
+        'bpm': 'bpm',
+        'lyricist': 'lyricist',
+        'version': 'version'
+    }
 
+    # Add standard text metadata
+    for source_key, vorbis_key in field_mapping.items():
+        if source_key in song_metadata:
+            value = song_metadata[source_key]
+            
+            # Special handling for date field
+            if vorbis_key == 'date':
+                # Convert datetime object to YYYY-MM-DD string format
+                if hasattr(value, 'strftime'):
+                    value = value.strftime('%Y-%m-%d')
+                # Handle string timestamps if necessary
+                elif isinstance(value, str) and ' ' in value:
+                    value = value.split()[0]
+                    
+            audio[vorbis_key] = [str(value)]
+
+    # Add lyrics if present
+    if 'lyric' in song_metadata:
+        audio['lyrics'] = [str(song_metadata['lyric'])]
+
+    # Handle cover art
     if 'image' in song_metadata:
-        image = Picture()
-        image.type = 3
-        image.desc = 'Cover'
-        image.mime = 'image/jpeg'
-        
         try:
+            image = Picture()
+            image.type = 3  # Front cover
+            image.mime = 'image/jpeg'
+            image.desc = 'Cover'
+            
             if isinstance(song_metadata['image'], bytes):
                 image.data = song_metadata['image']
             else:
                 image.data = request(song_metadata['image']).content
                 
-            import base64
-            img_data = base64.b64encode(image.write())
-            audio['metadata_block_picture'] = [img_data.decode('utf-8')]
+            # Encode using base64 as required by Vorbis spec
+            audio['metadata_block_picture'] = [
+                b64encode(image.write()).decode('utf-8')
+            ]
         except Exception as e:
-            print(f"Warning: Could not add cover image: {str(e)}")
+            print(f"Error adding cover art: {e}")
+
+    # Additional validation for numeric fields
+    numeric_fields = ['tracknumber', 'discnumber', 'bpm']
+    for field in numeric_fields:
+        if field in audio:
+            try:
+                int(audio[field][0])
+            except ValueError:
+                print(f"Warning: Invalid numeric value for {field}")
+                del audio[field]
 
     audio.save()
 
@@ -256,7 +305,5 @@ def check_track(media):
 
     f_format = media.file_format
     is_ok = False
-
-    # Add your logic to check the track/episode here
 
     return is_ok
