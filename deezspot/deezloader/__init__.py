@@ -584,4 +584,3 @@ class DeeLogin:
 			smart.playlist = playlist
 
 		return smart
-
