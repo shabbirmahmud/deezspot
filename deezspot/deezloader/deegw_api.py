@@ -103,22 +103,13 @@ class API_GW:
 
         return access_token
 
-    def __cool_api(cls):
-        guest_sid = cls.__req.cookies.get("sid")
-        url = "https://api.deezer.com/1.0/gateway.php"
-
-        params = {
-            'api_key': "4VCYIJUCDLOUELGD1V8WBVYBNVDYOXEWSLLZDONGBBDFVXTZJRXPR29JRLQFO6ZE",
-            'sid': guest_sid,
-            'input': '3',
-            'output': '3',
-            'method': 'song_getData'
+    @classmethod
+    def get_account_info(cls):
+        data = cls.get_user()
+        account_info = {
+            'is_premium': data['USER']['OPTIONS'].get('is_premium', False)
         }
-
-        json = {'sng_id': 302127}
-
-        json = req_post(url, params = params, json = json).json()
-        print(json)
+        return account_info
 
     @classmethod
     def __get_api(
