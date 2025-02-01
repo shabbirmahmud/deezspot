@@ -203,7 +203,7 @@ class SpoLogin:
         recursive_download=stock_recursive_download,
         not_interface=stock_not_interface,
         method_save=method_save,
-        is_thread=is_thread
+        is_thread=is_thread,
     ) -> Episode:
         try:
             link_is_valid(link_episode)
