@@ -1,7 +1,7 @@
 import traceback
 from tqdm import tqdm
 import os 
-from time import sleep
+import time
 from copy import deepcopy
 from os.path import isfile, dirname
 from librespot.core import Session
@@ -137,40 +137,52 @@ class EASY_DW:
     def download_try(self) -> Track:
         song = f"{self.__song_metadata['music']} - {self.__song_metadata['artist']}"
         track_id = self.__ids
+        retries = 0
+        max_retries = 10
+        retry_delay = 5  
 
-        try:
-            if isfile(self.__song_path) and check_track(self.__c_track):
-                if self.__recursive_download:
-                    return self.__c_track
+        while retries < max_retries:
+            try:
+                if isfile(self.__song_path) and check_track(self.__c_track):
+                    if self.__recursive_download:
+                        return self.__c_track
 
-                ans = input(f'Track "{self.__song_path}" already exists, do you want to redownload it?(y or n):')
-                if ans.lower() not in ('y', 'yes'):
-                    return self.__c_track
+                    ans = input(f'Track "{self.__song_path}" already exists, do you want to redownload it?(y or n):')
+                    if ans.lower() not in ('y', 'yes'):
+                        return self.__c_track
 
-            track_id_obj = TrackId.from_base62(self.__ids)
-            stream = Download_JOB.session.content_feeder().load_track(
-                track_id_obj,
-                VorbisOnlyAudioQuality(self.__dw_quality),
-                False,
-                None
-            )
+                track_id_obj = TrackId.from_base62(self.__ids)
+                stream = Download_JOB.session.content_feeder().load_track(
+                    track_id_obj,
+                    VorbisOnlyAudioQuality(self.__dw_quality),
+                    False,
+                    None
+                )
 
-            total_size = stream.input_stream.size
-            os.makedirs(dirname(self.__song_path), exist_ok=True)
+                total_size = stream.input_stream.size
+                os.makedirs(dirname(self.__song_path), exist_ok=True)
 
-            with open(self.__song_path, "wb") as f:
-                c_stream = stream.input_stream.stream()
-                data = c_stream.read(total_size)
-                c_stream.close()
-                f.write(data)
+                with open(self.__song_path, "wb") as f:
+                    c_stream = stream.input_stream.stream()
+                    data = c_stream.read(total_size)
+                    c_stream.close()
+                    f.write(data)
 
-            self.__convert_audio()
-            self.__write_track()
-            return self.__c_track
+                self.__convert_audio()
+                self.__write_track()
+                return self.__c_track
 
-        except Exception as e:
-            print(f"Error downloading {song}: {str(e)}")
-            raise e
+            except RuntimeError as e:
+                if "Failed fetching audio key!" in str(e) and retries < max_retries:
+                    print(f"Retrying download for {song}. Attempt {retries + 1}/{max_retries}. Retrying in {retry_delay} seconds.")
+                    time.sleep(retry_delay)
+                    retries += 1
+                else:
+                    print(f"Error downloading {song}: {str(e)}")
+                    raise e
+            except Exception as e:
+                print(f"Error downloading {song}: {str(e)}")
+                raise e
 
     def download_eps(self) -> Episode:
         if isfile(self.__song_path) and check_track(self.__c_episode):
@@ -189,7 +201,7 @@ class EASY_DW:
         try:
             stream = Download_JOB.session.content_feeder().load_episode(
                 episode_id,
-                AudioQuality(self.__dw_quality),
+                VorbisOnlyAudioQuality(self.__dw_quality),
                 False,
                 None
             )
@@ -198,7 +210,6 @@ class EASY_DW:
 
         total_size = stream.input_stream.size
 
-        # Ensure the directory exists before writing the file
         os.makedirs(dirname(self.__song_path), exist_ok=True)
 
         with open(self.__song_path, "wb") as f:
@@ -208,8 +219,8 @@ class EASY_DW:
             f.write(data)
 
         self.__convert_audio()
-
         self.__write_episode()
+        write_tags(self.__c_episode)
 
         return self.__c_episode
 
