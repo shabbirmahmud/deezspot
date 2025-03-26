@@ -3,16 +3,20 @@
 from spotipy import Spotify
 from deezspot.exceptions import InvalidLink
 from spotipy.exceptions import SpotifyException
-from spotipy_anon import SpotifyAnon
+from spotipy.oauth2 import SpotifyClientCredentials
 
 class Spo:
     __error_codes = [404, 400]
 
     @classmethod
-    def __init__(cls):
-        cls.__api = Spotify(
-            auth_manager=SpotifyAnon() # Instead using spotipy client use spotify anon because spotify client can't fetch information from track or playlist from official spotify
-        )
+    def __init__(cls, client_id=None, client_secret=None):
+        if client_id and client_secret:
+            # Use SpotifyClientCredentials for authenticated access
+            auth_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
+        else:
+            print("Fill the client id and client secret! look at example")
+
+        cls.__api = Spotify(auth_manager=auth_manager)
 
     @classmethod
     def __lazy(cls, results):
