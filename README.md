@@ -34,7 +34,7 @@ pip install git+https://github.com/jakiepari/deezspot
 ```python
 from deezspot.deezloader import DeeLogin
 
-dl = DeeLogin(arl='your_arl_token', email='your_Deezer_email', password='your_Deezer_password')
+dl = DeeLogin(arl='your_arl_token', email='your_Deezer_email', password='your_Deezer_password', tags_separator=" / ")
 ```
 
 ### Spotify Authentication
@@ -86,76 +86,75 @@ Just play 1 song and then click connect to a device and select librespot-python 
 
 ### Downloading with Deezer 
 ```python
-from deezspot.deezloader import DeeLogin
-
-dl = DeeLogin(arl='your_arl_token', email='', password='')
-
-# Download single track
-dl.download_trackdee(
-    link_track='https://www.deezer.com/track/123456789',
-    output_dir='./downloads',
-    quality_download='MP3_320',
-    recursive_quality=False,
-    recursive_download=False
-)
-
-# Download album
-dl.download_albumdee(
-    link_album='https://www.deezer.com/album/123456789',
-    output_dir='./downloads/albums',
-    quality_download='FLAC',
-    recursive_quality=True,
-    recursive_download=False
-)
-
-# Download playlist
-dl.download_playlistdee(
-    link_playlist='https://www.deezer.com/playlist/123456789',
-    output_dir='./downloads/playlists',
-    quality_download='MP3_320',
-    recursive_quality=True,
-    recursive_download=False
-)
-
-# Download artist
-dl.download_artistdee(
-    link_artist='https://www.deezer.com/artist/123456789',
-    output_dir='./downloads/artists',
-    quality_download='MP3_320',
-    recursive_quality=True,
-    recursive_download=False
-)
-
-# Download episode
-dl.download_episode(
-    link_episode='https://www.deezer.com/episode/123456789',
-    output_dir='./downloads/episode',
-    quality_download='MP3_320',
-    recursive_quality=True,
-    recursive_download=False
-)
-```
-
-### Downloading with Spotify 
-```python
 import sys
 import os
 import traceback
 
-# Add the local deezloader directory to the sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+# Add the local deezspot directory to the sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from deezspot.deezloader import DeeLogin
 from deezspot.spotloader import SpoLogin
 
 try:
-    # Initialize Spotify client
-    # Make sure to generate credentials.json using librespot-auth first
-    credentials_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'credentials.json'))
-    spo = SpoLogin(credentials_path=credentials_path)
+    # Deezer Example
+    print("Initializing Deezer client...")
+    deezer = DeeLogin(arl='your_arl_token', email='', password='')
 
-    # Download single track
-    track = spo.download_track(
+    # Download a single track from Deezer
+    deezer.download_trackdee(
+        link_track='https://www.deezer.com/track/123456789',
+        output_dir='./downloads/deezer/tracks',
+        quality_download='MP3_320',
+        recursive_quality=False,
+        recursive_download=False
+    )
+
+    # Download an album from Deezer
+    deezer.download_albumdee(
+        link_album='https://www.deezer.com/album/123456789',
+        output_dir='./downloads/deezer/albums',
+        quality_download='FLAC',
+        recursive_quality=True,
+        recursive_download=False
+    )
+
+    # Download a playlist from Deezer
+    deezer.download_playlistdee(
+        link_playlist='https://www.deezer.com/playlist/123456789',
+        output_dir='./downloads/deezer/playlists',
+        quality_download='MP3_320',
+        recursive_quality=True,
+        recursive_download=False
+    )
+
+    # Download an artist's top tracks from Deezer
+    deezer.download_artisttopdee(
+        link_artist='https://www.deezer.com/artist/123456789',
+        output_dir='./downloads/deezer/artists',
+        quality_download='MP3_320',
+        recursive_quality=True,
+        recursive_download=False
+    )
+
+    # Download an episode from Deezer
+    deezer.download_episode(
+        link_episode='https://www.deezer.com/episode/123456789',
+        output_dir='./downloads/deezer/episodes',
+        quality_download='MP3_320',
+        recursive_quality=True,
+        recursive_download=False
+    )
+
+    # Spotify Example
+    print("Initializing Spotify client...")
+    credentials_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'credentials.json'))
+    spotify = SpoLogin(credentials_path=credentials_path, client_id='your_client_id', client_secret='your_client_secret')
+
+    # Download a single track from Spotify
+    spotify.download_track(
         link_track="https://open.spotify.com/track/4tCtwWceOPWzenK2HAIJSb",
-        output_dir="./downloads/tracks",
+        output_dir="./downloads/spotify/tracks",
         quality_download="NORMAL",
         recursive_quality=False,
         recursive_download=False,
@@ -163,10 +162,10 @@ try:
         method_save=1
     )
 
-    # Download album
-    album = spo.download_album(
+    # Download an album from Spotify
+    spotify.download_album(
         link_album="https://open.spotify.com/album/6n4YU8iRm07O7lR1zQZypN",
-        output_dir="./downloads/albums",
+        output_dir="./downloads/spotify/albums",
         quality_download="NORMAL",
         recursive_quality=True,
         recursive_download=False,
@@ -175,10 +174,10 @@ try:
         make_zip=True
     )
 
-    # Download playlist
-    playlist = spo.download_playlist(
+    # Download a playlist from Spotify
+    spotify.download_playlist(
         link_playlist="https://open.spotify.com/playlist/1ZyEi4bBTYGTIlY23U1kwG",
-        output_dir="./downloads/playlists",
+        output_dir="./downloads/spotify/playlists",
         quality_download="NORMAL",
         recursive_quality=True,
         recursive_download=False,
@@ -187,10 +186,10 @@ try:
         make_zip=True
     )
 
-    # Download episode
-    episode = spo.download_episode(
+    # Download an episode from Spotify
+    spotify.download_episode(
         link_episode="https://open.spotify.com/episode/1hgO8Y3CCymyxn934lNtDq",
-        output_dir="./downloads/episodes",
+        output_dir="./downloads/spotify/episodes",
         quality_download="NORMAL",
         recursive_quality=False,
         recursive_download=False,
