@@ -99,7 +99,7 @@ from deezspot.spotloader import SpoLogin
 try:
     # Deezer Example
     print("Initializing Deezer client...")
-    deezer = DeeLogin(arl='your_arl_token', email='', password='')
+    deezer = DeeLogin(arl='your_arl_token', email='', password='', tags_separator=" / ")
 
     # Download a single track from Deezer
     deezer.download_trackdee(
