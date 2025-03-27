@@ -138,10 +138,9 @@ class EASY_DW:
         song = f"{self.__song_metadata['music']} - {self.__song_metadata['artist']}"
         track_id = self.__ids
         retries = 0
-        max_retries = 10
-        retry_delay = 5  
+        retry_delay = 30
 
-        while retries < max_retries:
+        while True:
             try:
                 if isfile(self.__song_path) and check_track(self.__c_track):
                     if self.__recursive_download:
@@ -173,8 +172,8 @@ class EASY_DW:
                 return self.__c_track
 
             except RuntimeError as e:
-                if "Failed fetching audio key!" in str(e) and retries < max_retries:
-                    print(f"Retrying download for {song}. Attempt {retries + 1}/{max_retries}. Retrying in {retry_delay} seconds.")
+                if "Failed fetching audio key!" in str(e):
+                    print(f"Retrying download for {song}. Attempt {retries + 1}. Retrying in {retry_delay} seconds.")
                     time.sleep(retry_delay)
                     retries += 1
                 else:

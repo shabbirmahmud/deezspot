@@ -205,97 +205,92 @@ class API:
 		return image
 
 	@classmethod
-	def tracking(cls, ids, album = False) -> dict:
-		song_metadata = {}
-		json_track = cls.get_track(ids)
+	def tracking(cls, ids, album = False, tags_separator = None):
+			song_metadata = {}
+			json_track = cls.get_track(ids)
 
-		if not album:
-			album_ids = json_track['album']['id']
-			album_json = cls.get_album(album_ids)
+			if not album:
+				album_ids = json_track['album']['id']
+				album_json = cls.get_album(album_ids)
+				genres = []
+
+				if "genres" in album_json:
+					for genre in album_json['genres']['data']:
+						genres.append(genre['name'])
+
+				song_metadata['genre'] = " & ".join(genres)
+				ar_album = []
+
+				for contributor in album_json['contributors']:
+					if contributor['role'] == "Main":
+						ar_album.append(contributor['name'])
+
+				song_metadata['ar_album'] = artist_sort(ar_album, separator=tags_separator)  
+				song_metadata['album'] = album_json['title']
+				song_metadata['label'] = album_json['label']
+				song_metadata['upc'] = album_json['upc']
+				song_metadata['nb_tracks'] = album_json['nb_tracks']
+
+			song_metadata['music'] = json_track['title']
+			array = []
+
+			for contributor in json_track['contributors']:
+				if contributor['name'] != "":
+					array.append(contributor['name'])
+
+			array.append(json_track['artist']['name'])
+
+			song_metadata['artist'] = artist_sort(array, separator=tags_separator)  
+			song_metadata['tracknum'] = json_track['track_position']
+			song_metadata['discnum'] = json_track['disk_number']
+			song_metadata['year'] = convert_to_date(json_track['release_date'])
+			song_metadata['bpm'] = json_track['bpm']
+			song_metadata['duration'] = json_track['duration']
+			song_metadata['isrc'] = json_track['isrc']
+			song_metadata['gain'] = json_track['gain']
+
+			return song_metadata
+
+	@classmethod
+	def tracking_album(cls, ids, tags_separator = None):
+			song_metadata = {
+				"music": [],
+				"artist": [],
+				"tracknum": [],
+				"discnum": [],
+				"bpm": [],
+				"duration": [],
+				"isrc": [],
+				"gain": [],
+				"album": album_json['title'],
+				"label": album_json['label'],
+				"year": convert_to_date(album_json['release_date']),
+				"upc": album_json['upc'],
+				"nb_tracks": album_json['nb_tracks']
+			}
+
 			genres = []
 
 			if "genres" in album_json:
-				for genre in album_json['genres']['data']:
-					genres.append(genre['name'])
+				for a in album_json['genres']['data']:
+					genres.append(a['name'])
 
 			song_metadata['genre'] = " & ".join(genres)
 			ar_album = []
 
-			for contributor in album_json['contributors']:
-				if contributor['role'] == "Main":
-					ar_album.append(contributor['name'])
+			for a in album_json['contributors']:
+				if a['role'] == "Main":
+					ar_album.append(a['name'])
 
-			song_metadata['ar_album'] = " & ".join(ar_album)
-			song_metadata['album'] = album_json['title']
-			song_metadata['label'] = album_json['label']
-			song_metadata['upc'] = album_json['upc']
-			song_metadata['nb_tracks'] = album_json['nb_tracks']
+			song_metadata['ar_album'] = artist_sort(ar_album, separator=tags_separator)  # Use custom separator
+			sm_items = song_metadata.items()
 
-		song_metadata['music'] = json_track['title']
-		array = []
+			for track in album_json['tracks']['data']:
+				c_ids = track['id']
+				detas = cls.tracking(c_ids, album=True, tags_separator=tags_separator)  # Pass separator
 
-		for contributor in json_track['contributors']:
-			if contributor['name'] != "":
-				array.append(contributor['name'])
+				for key, item in sm_items:
+					if type(item) is list:
+						song_metadata[key].append(detas[key])
 
-		array.append(
-			json_track['artist']['name']
-		)
-
-		song_metadata['artist'] = artist_sort(array)
-		song_metadata['tracknum'] = json_track['track_position']
-		song_metadata['discnum'] = json_track['disk_number']
-		song_metadata['year'] = convert_to_date(json_track['release_date'])
-		song_metadata['bpm'] = json_track['bpm']
-		song_metadata['duration'] = json_track['duration']
-		song_metadata['isrc'] = json_track['isrc']
-		song_metadata['gain'] = json_track['gain']
-
-		return song_metadata
-
-	@classmethod
-	def tracking_album(cls, album_json):
-		song_metadata: dict[
-			str,
-			list or str or int or datetime
-		] = {
-			"music": [],
-			"artist": [],
-			"tracknum": [],
-			"discnum": [],
-			"bpm": [],
-			"duration": [],
-			"isrc": [],
-			"gain": [],
-			"album": album_json['title'],
-			"label": album_json['label'],
-			"year": convert_to_date(album_json['release_date']),
-			"upc": album_json['upc'],
-			"nb_tracks": album_json['nb_tracks']
-		}
-
-		genres = []
-
-		if "genres" in album_json:
-			for a in album_json['genres']['data']:
-				genres.append(a['name'])
-
-		song_metadata['genre'] = " & ".join(genres)
-		ar_album = []
-
-		for a in album_json['contributors']:
-			if a['role'] == "Main":
-				ar_album.append(a['name'])
-
-		song_metadata['ar_album'] = " & ".join(ar_album)
-		sm_items = song_metadata.items()
-
-		for track in album_json['tracks']['data']:
-			c_ids = track['id']
-			detas = cls.tracking(c_ids, album = True)
-
-			for key, item in sm_items:
-				if type(item) is list:
-					song_metadata[key].append(detas[key])
-
-		return song_metadata
+			return song_metadata

@@ -38,76 +38,75 @@ from deezspot.libutils.others_settings import (
     method_save,
 )
 
-Spo()
 API()
 
 class DeeLogin:
 	def __init__(
-		self,
-		arl = None,
-		email = None,
-		password = None,
-		ensure_premium = False
-	) -> None:
+			self,
+			arl=None,
+			email=None,
+			password=None,
+			ensure_premium=False,
+			tags_separator=None  
+		) -> None:
+			if arl:
+				self.__gw_api = API_GW(arl=arl)
+			else:
+				self.__gw_api = API_GW(
+					email=email,
+					password=password
+				)
 
-		if arl:
-			self.__gw_api = API_GW(arl = arl)
-		else:
-			self.__gw_api = API_GW(
-				email = email,
-				password = password
-			)
-
-		self.ensure_premium = ensure_premium
-		self.__check_premium_status()
+			self.ensure_premium = ensure_premium
+			self.tags_separator = tags_separator  
+			self.__check_premium_status()
 
 	def __check_premium_status(self):
-		account_info = self.__gw_api.get_account_info()
-		if not account_info.get('is_premium', False):
-			if self.ensure_premium:
-				raise Exception("Premium account is required but not found.")
-			else:
-				print("Warning: You are not using a premium account. FLAC quality downloads will not be available.")
+			account_info = self.__gw_api.get_account_info()
+			if not account_info.get('is_premium', False):
+				if self.ensure_premium:
+					raise Exception("Premium account is required but not found.")
+				else:
+					print("Warning: You are not using a premium account. FLAC quality downloads will not be available.")
 
 	def download_trackdee(
-		self, link_track,
-		output_dir = stock_output,
-		quality_download = stock_quality,
-		recursive_quality = stock_recursive_quality,
-		recursive_download = stock_recursive_download,
-		not_interface = stock_not_interface,
-		method_save = method_save
-	) -> Track:
+			self, link_track,
+			output_dir=stock_output,
+			quality_download=stock_quality,
+			recursive_quality=stock_recursive_quality,
+			recursive_download=stock_recursive_download,
+			not_interface=stock_not_interface,
+			method_save=method_save
+		) -> Track:
+			link_is_valid(link_track)
+			ids = get_ids(link_track)
 
-		link_is_valid(link_track)
-		ids = get_ids(link_track)
+			try:
+				song_metadata = API.tracking(ids, tags_separator=self.tags_separator)  # Pass the separator
+			except NoDataApi:
+				infos = self.__gw_api.get_song_data(ids)
 
-		try:
-			song_metadata = API.tracking(ids)
-		except NoDataApi:
-			infos = self.__gw_api.get_song_data(ids)
+				if not "FALLBACK" in infos:
+					raise TrackNotFound(link_track)
 
-			if not "FALLBACK" in infos:
-				raise TrackNotFound(link_track)
+				ids = infos['FALLBACK']['SNG_ID']
+				song_metadata = API.tracking(ids, tags_separator=self.tags_separator)  # Pass the separator
 
-			ids = infos['FALLBACK']['SNG_ID']
-			song_metadata = API.tracking(ids)
+			preferences = Preferences()
 
-		preferences = Preferences()
+			preferences.link = link_track
+			preferences.song_metadata = song_metadata
+			preferences.quality_download = quality_download
+			preferences.output_dir = output_dir
+			preferences.ids = ids
+			preferences.recursive_quality = recursive_quality
+			preferences.recursive_download = recursive_download
+			preferences.not_interface = not_interface
+			preferences.method_save = method_save
 
-		preferences.link = link_track
-		preferences.song_metadata = song_metadata
-		preferences.quality_download = quality_download
-		preferences.output_dir = output_dir
-		preferences.ids = ids
-		preferences.recursive_quality = recursive_quality
-		preferences.recursive_download = recursive_download
-		preferences.not_interface = not_interface
-		preferences.method_save = method_save
+			track = DW_TRACK(preferences).dw()
 
-		track = DW_TRACK(preferences).dw()
-
-		return track
+			return track
 
 	def download_albumdee(
 		self, link_album,
@@ -224,190 +223,6 @@ class DeeLogin:
 
 		return names
 
-	def convert_spoty_to_dee_link_track(self, link_track):
-		link_is_valid(link_track)
-		ids = get_ids(link_track)
-
-		track_json = Spo.get_track(ids)
-		external_ids = track_json['external_ids']
-
-		if not external_ids:
-			msg = f"⚠ The track \"{track_json['name']}\" can't be converted to Deezer link :( ⚠"
-
-			raise TrackNotFound(
-				url = link_track,
-				message = msg
-			)
-
-		isrc = f"isrc:{external_ids['isrc']}"
-
-		track_json_dee = API.get_track(isrc)
-		track_link_dee = track_json_dee['link']
-
-		return track_link_dee
-
-	def download_trackspo(
-		self, link_track,
-		output_dir = stock_output,
-		quality_download = stock_quality,
-		recursive_quality = stock_recursive_quality,
-		recursive_download = stock_recursive_download,
-		not_interface = stock_not_interface,
-		method_save = method_save
-	) -> Track:
-
-		track_link_dee = self.convert_spoty_to_dee_link_track(link_track)
-
-		track = self.download_trackdee(
-			track_link_dee,
-			output_dir = output_dir,
-			quality_download = quality_download,
-			recursive_quality = recursive_quality,
-			recursive_download = recursive_download,
-			not_interface = not_interface,
-			method_save = method_save
-		)
-
-		return track
-
-	def convert_spoty_to_dee_link_album(self, link_album):
-		link_is_valid(link_album)
-		ids = get_ids(link_album)
-		link_dee = None
-
-		tracks = Spo.get_album(ids)
-
-		try:
-			external_ids = tracks['external_ids']
-
-			if not external_ids:
-				raise AlbumNotFound
-
-			upc = f"0{external_ids['upc']}"
-
-			while upc[0] == "0":
-				upc = upc[1:]
-
-				try:
-					upc = f"upc:{upc}"
-					url = API.get_album(upc)
-					link_dee = url['link']
-					break
-				except NoDataApi:
-					if upc[0] != "0":
-						raise AlbumNotFound
-		except AlbumNotFound:
-			tot = tracks['total_tracks']
-			tracks = tracks['tracks']['items']
-			tot2 = None
-
-			for track in tracks:
-				track_link = track['external_urls']['spotify']
-				track_info = Spo.get_track(track_link)
-
-				try:
-					isrc = f"isrc:{track_info['external_ids']['isrc']}"
-					track_data = API.get_track(isrc)
-
-					if not "id" in track_data['album']:
-						continue
-
-					album_ids = track_data['album']['id']
-					album_json = API.get_album(album_ids)
-					tot2 = album_json['nb_tracks']
-
-					if tot == tot2:
-						link_dee = album_json['link']
-						break
-				except NoDataApi:
-					pass
-
-			if tot != tot2:
-				raise AlbumNotFound(link_album)
-
-		return link_dee
-
-	def download_albumspo(
-		self, link_album,
-		output_dir = stock_output,
-		quality_download = stock_quality,
-		recursive_quality = stock_recursive_quality,
-		recursive_download = stock_recursive_download,
-		not_interface = stock_not_interface,
-		make_zip = stock_zip,
-		method_save = method_save
-	) -> Album:
-
-		link_dee = self.convert_spoty_to_dee_link_album(link_album)
-
-		album = self.download_albumdee(
-			link_dee, output_dir,
-			quality_download, recursive_quality,
-			recursive_download, not_interface,
-			make_zip, method_save
-		)
-
-		return album
-
-	def download_playlistspo(
-		self, link_playlist,
-		output_dir = stock_output,
-		quality_download = stock_quality,
-		recursive_quality = stock_recursive_quality,
-		recursive_download = stock_recursive_download,
-		not_interface = stock_not_interface,
-		make_zip = stock_zip,
-		method_save = method_save
-	) -> Playlist:
-
-		link_is_valid(link_playlist)
-		ids = get_ids(link_playlist)
-
-		playlist_json = Spo.get_playlist(ids)
-		playlist_tracks = playlist_json['tracks']['items']
-		playlist = Playlist()
-		tracks = playlist.tracks
-
-		for track in playlist_tracks:
-			is_track = track['track']
-
-			if not is_track:
-				continue
-
-			external_urls = is_track['external_urls']
-
-			if not external_urls:
-				print(f"The track \"{is_track['name']}\" is not avalaible on Spotify :(")
-				continue
-
-			link_track = external_urls['spotify']
-
-			try:
-				track = self.download_trackspo(
-					link_track,
-					output_dir = output_dir,
-					quality_download = quality_download,
-					recursive_quality = recursive_quality,
-					recursive_download = recursive_download,
-					not_interface = not_interface,
-					method_save = method_save
-				)
-			except (TrackNotFound, NoDataApi):
-				info = track['track']
-				artist = info['artists'][0]['name']
-				song = info['name']
-				track = f"{song} - {artist}"
-
-			tracks.append(track)
-
-		if make_zip:
-			playlist_name = playlist_json['name']
-			zip_name = f"{output_dir}playlist {playlist_name}.zip"
-			create_zip(tracks, zip_name = zip_name)
-			playlist.zip_path = zip_name
-
-		return playlist
-
 	def download_name(
 		self, artist, song,
 		output_dir = stock_output,
@@ -513,10 +328,7 @@ class DeeLogin:
 		smart.source = source
 
 		if "track/" in link:
-			if "spotify.com" in link:
-				func = self.download_trackspo
-
-			elif "deezer.com" in link:
+			if "deezer.com" in link:
 				func = self.download_trackdee
 				
 			else:
@@ -536,10 +348,7 @@ class DeeLogin:
 			smart.track = track
 
 		elif "album/" in link:
-			if "spotify.com" in link:
-				func = self.download_albumspo
-
-			elif "deezer.com" in link:
+			if "deezer.com" in link:
 				func = self.download_albumdee
 
 			else:
@@ -560,10 +369,7 @@ class DeeLogin:
 			smart.album = album
 
 		elif "playlist/" in link:
-			if "spotify.com" in link:
-				func = self.download_playlistspo
-
-			elif "deezer.com" in link:
+			if "deezer.com" in link:
 				func = self.download_playlistdee
 
 			else:

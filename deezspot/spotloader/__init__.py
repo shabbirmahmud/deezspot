@@ -35,15 +35,15 @@ from deezspot.libutils.others_settings import (
     method_save,
     is_thread,
 )
-Spo()
-
 class SpoLogin:
-    def __init__(
-        self,
-        credentials_path: str,
-    ) -> None:
+    def __init__(self, credentials_path: str, client_id: str, client_secret: str) -> None:
         self.credentials_path = credentials_path
+        self.client_id = client_id
+        self.client_secret = client_secret
         self.__initialize_session()
+
+        # Initialize Spo with credentials
+        Spo(client_id=self.client_id, client_secret=self.client_secret)
 
     def __initialize_session(self) -> None:
         session_builder = Session.Builder()

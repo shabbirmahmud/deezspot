@@ -1,20 +1,21 @@
 #!/usr/bin/python3
 
-def artist_sort(array: list):
-	if len(array) > 1:
-		for a in array:
-			for b in array:
-				if a in b and a != b:
-					array.remove(b)
+import os
 
-	array = list(
-		dict.fromkeys(array)
-	)
+def artist_sort(array: list, separator: str = None):
+    if len(array) > 1:
+        for a in array:
+            for b in array:
+                if a in b and a != b:
+                    array.remove(b)
 
-	artists = " & ".join(array)
+    array = list(dict.fromkeys(array))
+    if separator is None:
+        separator = os.getenv("DEEZSPOT_TAGS_SEPARATOR", " & ")
 
-	return artists
+    artists = separator.join(array)
 
+    return artists
 def check_track_token(infos: dict):
 	if "FALLBACK" in infos:
 		track_token = infos['FALLBACK']['TRACK_TOKEN']
