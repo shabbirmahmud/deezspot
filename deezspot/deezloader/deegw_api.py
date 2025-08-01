@@ -107,7 +107,7 @@ class API_GW:
     def get_account_info(cls):
         data = cls.get_user()
         account_info = {
-            'is_premium': 'Free' not in data.get('OFFER_NAME')
+            'is_premium': 'Free' not in data.get('OFFER_NAME', 'UNKNOWN')
         }
         return account_info
 
