@@ -22,7 +22,7 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "spotipy-anon",
-    "librespot @ https://github.com/kokarare1212/librespot-python.git"
+    "librespot @ git+https://github.com/Googolplexed0/librespot-python.git@login5-refresh"
 ]
 
 [project.urls]
